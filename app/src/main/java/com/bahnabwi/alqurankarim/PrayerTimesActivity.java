@@ -21,6 +21,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -65,7 +67,7 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
     private final Handler countdownHandler = new Handler(Looper.getMainLooper());
     private Runnable countdownRunnable;
 
-    private ImageView ivCompassBase, ivCompassNeedle;
+    private ImageView ivCompassBase, ivCompassNeedle, ivKaabaIcon;
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private Sensor magnetometer;
@@ -79,6 +81,8 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
     private double latitude = 30.0444; 
     private double longitude = 31.2357;
     private SharedPreferences prefs;
+    private Vibrator vibrator;
+    private boolean hasVibrated = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,14 +90,15 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
         setContentView(R.layout.activity_prayer_times);
 
         prefs = getSharedPreferences("quran_prefs", MODE_PRIVATE);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         progressBar = findViewById(R.id.pbLoadingPrayer);
         tvDate = findViewById(R.id.tvDate);
         tvCity = findViewById(R.id.tvCity);
         tvNextPrayerName = findViewById(R.id.tvNextPrayerName);
         tvCountdown = findViewById(R.id.tvCountdown);
+        ivKaabaIcon = findViewById(R.id.ivKaabaIcon);
 
-        // تعليق جراحي: برمجة "اختبار المنبه الحقيقي" - يجدول الأذان بعد 10 ثوانٍ ويطلب منك إغلاق التطبيق
         findViewById(R.id.layoutNextPrayer).setOnClickListener(v -> {
             long testTime = System.currentTimeMillis() + 10000;
             AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -112,7 +117,7 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
                     am.setExact(AlarmManager.RTC_WAKEUP, testTime, pi);
                 }
             }
-            Toast.makeText(this, "سيعمل الأذان بعد 10 ثوانٍ.. أغلق التطبيق الآن للتجربة!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "سيعمل الأذان بعد 10 ثوانٍ.. أغلق التطبيق الآن!", Toast.LENGTH_LONG).show();
         });
 
         ivCompassBase = findViewById(R.id.ivCompassBase);
@@ -143,18 +148,6 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getCurrentLocation();
-            } else {
-                updateLocationData(latitude, longitude);
-            }
-        }
-    }
-
     private void getCurrentLocation() {
         try {
             Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
@@ -164,6 +157,15 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
             if (location != null) {
                 updateLocationData(location.getLatitude(), location.getLongitude());
             }
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new LocationListener() {
+                @Override
+                public void onLocationChanged(@NonNull Location loc) {
+                    updateLocationData(loc.getLatitude(), loc.getLongitude());
+                }
+                @Override public void onStatusChanged(String provider, int status, Bundle extras) {}
+                @Override public void onProviderEnabled(@NonNull String provider) {}
+                @Override public void onProviderDisabled(@NonNull String provider) {}
+            }, Looper.getMainLooper());
         } catch (SecurityException e) {
             Log.e(TAG, "Location error", e);
         }
@@ -178,7 +180,6 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
         if (prefs.getBoolean("azan_notify", true)) {
             PrayerScheduler.scheduleNextPrayer(this);
         }
-
         updateCityName(lat, lng);
         displayOfflinePrayerTimes(lat, lng);
         fetchPrayerTimesOnline(lat, lng);
@@ -199,8 +200,11 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
                     long secs = (diff / 1000) % 60;
                     tvNextPrayerName.setText(getString(R.string.next_prayer_countdown, name));
                     tvCountdown.setText(String.format(Locale.US, "%02d:%02d:%02d", hours, mins, secs));
+                    countdownHandler.postDelayed(this, 1000);
+                } else {
+                    tvCountdown.setText("00:00:00");
+                    updateLocationData(latitude, longitude);
                 }
-                countdownHandler.postDelayed(this, 1000);
             }
         };
         countdownHandler.post(countdownRunnable);
@@ -209,7 +213,6 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
     private void displayOfflinePrayerTimes(double lat, double lng) {
         try {
             PrayerTimes times = PrayerCalculator.getTimes(lat, lng);
-            // تعليق جراحي: تحويل نظام عرض الوقت من 24 ساعة إلى 12 ساعة مع إضافة مؤشر (ص/م)
             SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", new Locale("ar"));
             timeFormat.setTimeZone(TimeZone.getDefault());
             setPrayerItem(findViewById(R.id.layoutFajr), getString(R.string.fajr), timeFormat.format(times.timeForPrayer(Prayer.FAJR)));
@@ -260,7 +263,6 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
 
     private void updateUI(JSONObject timings) {
         try {
-            // تعليق جراحي: تحويل التوقيت القادم من الإنترنت لنظام 12 ساعة
             setPrayerItem(findViewById(R.id.layoutFajr), getString(R.string.fajr), formatTo12h(timings.getString("Fajr")));
             setPrayerItem(findViewById(R.id.layoutSunrise), getString(R.string.sunrise), formatTo12h(timings.getString("Sunrise")));
             setPrayerItem(findViewById(R.id.layoutDhuhr), getString(R.string.dhuhr), formatTo12h(timings.getString("Dhuhr")));
@@ -276,9 +278,7 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
             SimpleDateFormat sdf12 = new SimpleDateFormat("hh:mm a", new Locale("ar"));
             Date date = sdf24.parse(time24);
             return date != null ? sdf12.format(date) : time24;
-        } catch (Exception e) {
-            return time24;
-        }
+        } catch (Exception e) { return time24; }
     }
 
     private void setPrayerItem(View view, String name, String time) {
@@ -305,41 +305,47 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor == accelerometer) { 
-            lowPass(event.values, lastAccelerometer);
-            lastAccelerometerSet = true; 
-        }
-        else if (event.sensor == magnetometer) { 
-            lowPass(event.values, lastMagnetometer);
-            lastMagnetometerSet = true; 
-        }
+        if (event.sensor == accelerometer) { lowPass(event.values, lastAccelerometer); lastAccelerometerSet = true; }
+        else if (event.sensor == magnetometer) { lowPass(event.values, lastMagnetometer); lastMagnetometerSet = true; }
         
         if (lastAccelerometerSet && lastMagnetometerSet) {
             float[] R = new float[9], orientation = new float[3];
             if (SensorManager.getRotationMatrix(R, null, lastAccelerometer, lastMagnetometer)) {
                 SensorManager.getOrientation(R, orientation);
-                
-                // جراحة: تحويل الزاوية إلى درجات وتصحيح الميل المغناطيسي (True North) لضمان دقة "حقيقية"
                 float azimuthInDegrees = (float) Math.toDegrees(orientation[0]);
-                GeomagneticField geoField = new GeomagneticField(
-                        (float) latitude, (float) longitude, 0, System.currentTimeMillis());
+                GeomagneticField geoField = new GeomagneticField((float) latitude, (float) longitude, 0, System.currentTimeMillis());
                 azimuthInDegrees += geoField.getDeclination();
                 azimuthInDegrees = (azimuthInDegrees + 360) % 360;
 
-                // تدوير قاعدة البوصلة لتشير للشمال الحقيقي
                 float baseTarget = -azimuthInDegrees;
-                // تدوير الإبرة لتشير للقبلة بالنسبة للجهاز
                 float needleTarget = qiblaDegree - azimuthInDegrees;
 
-                // جراحة: استخدام Smoothing لمعالجة التسارع المفاجئ عند الاقتراب من القبلة وحل مشكلة القفز 360-0
                 applySmoothRotation(ivCompassBase, baseTarget);
                 applySmoothRotation(ivCompassNeedle, needleTarget);
+
+                // جراحة: تفعيل الاهتزاز (Haptic) وإظهار الكعبة عند محاذاة القبلة بدقة (+- 5 درجات)
+                checkQiblaAlignment(needleTarget);
             }
         }
     }
 
+    private void checkQiblaAlignment(float needleTarget) {
+        float normalizedTarget = (needleTarget + 360) % 360;
+        if (normalizedTarget > 355 || normalizedTarget < 5) {
+            if (!hasVibrated) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else { vibrator.vibrate(50); }
+                hasVibrated = true;
+            }
+            if (ivKaabaIcon != null) ivKaabaIcon.setVisibility(View.VISIBLE);
+        } else {
+            hasVibrated = false;
+            if (ivKaabaIcon != null) ivKaabaIcon.setVisibility(View.GONE);
+        }
+    }
+
     private void lowPass(float[] input, float[] output) {
-        // فلتر لتقليل الضوضاء في الحساسات ومنع الاهتزاز غير الضروري
         for (int i = 0; i < input.length; i++) {
             output[i] = output[i] + 0.15f * (input[i] - output[i]);
         }
@@ -348,13 +354,9 @@ public class PrayerTimesActivity extends AppCompatActivity implements SensorEven
     private void applySmoothRotation(ImageView view, float target) {
         float current = view.getRotation();
         float diff = target - current;
-        
-        // جراحة حاسمة: معالجة فرق الزاوية لضمان الدوران عبر أقصر مسار (يمنع التسارع الوهمي عند 0/360)
         while (diff > 180) diff -= 360;
         while (diff < -180) diff += 360;
-        
-        // تنعيم الحركة بنسبة 25% في كل إطار حساسات (أسرع وأكثر استجابة من RotateAnimation المتداخل)
-        view.setRotation(current + diff * 0.25f);
+        view.setRotation(current + diff * 0.18f);
     }
 
     @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {}

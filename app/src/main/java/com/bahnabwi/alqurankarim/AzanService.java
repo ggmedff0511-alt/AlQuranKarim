@@ -5,9 +5,12 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
@@ -18,18 +21,20 @@ import androidx.core.app.NotificationCompat;
 
 /**
  * خدمة تشغيل الأذان الحقيقية - المصحف الكوني
- * تعليق جراحي: تم ربط AzanActivity كـ fullScreenIntent لضمان ظهور الشاشة الحقيقية
- * فور دخول الوقت حتى فوق قفل الشاشة، مع تحسين دقة تشغيل الصوت عبر قناة المنبه.
+ * تعليق جراحي: تم إضافة نظام AudioFocus لضمان انفراد الأذان بالصوت وإيقاف أي وسائط أخرى تلقائياً.
  */
-public class AzanService extends Service {
+public class AzanService extends Service implements AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "AzanService";
     private static final String CHANNEL_ID = "AzanServiceChannel_v6";
     private MediaPlayer mediaPlayer;
     private PowerManager.WakeLock wakeLock;
+    private AudioManager audioManager;
+    private AudioFocusRequest focusRequest;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         if (pm != null) {
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AlQuranKarim:AzanWakeLock");
@@ -52,7 +57,6 @@ public class AzanService extends Service {
 
         createNotificationChannel();
 
-        // تعليق جراحي: إعداد Intent لشاشة الأذان الحقيقية لتظهر كـ FullScreenIntent
         Intent activityIntent = new Intent(this, AzanActivity.class);
         activityIntent.putExtra("prayerName", prayerName);
         activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -69,7 +73,7 @@ public class AzanService extends Service {
                 .setSmallIcon(R.drawable.ic_clock)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setFullScreenIntent(fullScreenPI, true) // هذا يضمن ظهور شاشة الأذان حقيقياً
+                .setFullScreenIntent(fullScreenPI, true)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, "إيقاف الأذان", stopPI)
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -81,16 +85,40 @@ public class AzanService extends Service {
             startForeground(2001, notification);
         }
 
-        playAzan();
+        requestAudioFocusAndPlay();
 
         return START_NOT_STICKY;
+    }
+
+    private void requestAudioFocusAndPlay() {
+        int result;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AudioAttributes playbackAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(playbackAttributes)
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(this)
+                    .build();
+            result = audioManager.requestAudioFocus(focusRequest);
+        } else {
+            result = audioManager.requestAudioFocus(this, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN);
+        }
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            playAzan();
+        } else {
+            // إذا لم نحصل على التركيز، نشغل الأذان على أي حال لأنه تنبيه هام
+            playAzan();
+        }
     }
 
     private void playAzan() {
         try {
             stopAzan();
             
-            // تعليق جراحي: ضبط خصائص الصوت كمنبه قبل بدء المشغل لضمان القوة
             AudioAttributes aa = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -102,9 +130,8 @@ public class AzanService extends Service {
                 mediaPlayer.setLooping(false);
                 mediaPlayer.setOnCompletionListener(mp -> stopSelf());
                 mediaPlayer.start();
-                Log.d(TAG, "Azan started successfully with real alarm attributes");
+                Log.d(TAG, "Azan started successfully");
             } else {
-                Log.e(TAG, "Failed to load azan sound");
                 stopSelf();
             }
         } catch (Exception e) {
@@ -121,6 +148,17 @@ public class AzanService extends Service {
             } catch (Exception ignored) {}
             mediaPlayer = null;
         }
+        abandonAudioFocus();
+    }
+
+    private void abandonAudioFocus() {
+        if (audioManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
+                audioManager.abandonAudioFocusRequest(focusRequest);
+            } else {
+                audioManager.abandonAudioFocus(this);
+            }
+        }
     }
 
     private void createNotificationChannel() {
@@ -132,6 +170,14 @@ public class AzanService extends Service {
             serviceChannel.enableVibration(false);
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) manager.createNotificationChannel(serviceChannel);
+        }
+    }
+
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            stopAzan();
+            stopSelf();
         }
     }
 
