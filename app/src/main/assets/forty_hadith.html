@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>الأربعون النووية - المصحف الكوني</title>
+    <!-- استدعاء الخطوط والمواد الرسومية الموحدة -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="forty_hadith.css"> <!-- تم فصل التنسيقات جراحياً -->
+</head>
+<body>
+    <header class="m3-top-app-bar" id="lib-header">
+        <button class="m3-icon-btn" onclick="window.parent.loadPage('library')" title="العودة">
+            <span class="material-symbols-rounded">arrow_forward</span>
+        </button>
+        <div class="header-center-info">
+            <h2 class="lib-main-title">الأربعون النووية</h2>
+            <div class="meta-line">متن الحديث</div>
+            <div class="meta-line gold-text">للإمام النووي</div>
+        </div>
+        <div class="m3-bar-actions">
+            <button class="m3-icon-btn" id="bookmark-icon"><span class="material-symbols-rounded">star_outline</span></button>
+            <button class="m3-icon-btn"><span class="material-symbols-rounded">image</span></button>
+            <button class="m3-icon-btn" onclick="window.parent.loadPage('reciters')"><span class="material-symbols-rounded">group</span></button>
+        </div>
+    </header>
+
+    <main id="hadith-viewport" onclick="toggleUI()">
+        <div id="hadith-container">
+            <div style="text-align:center; padding:60px; opacity:0.6;">
+                <p>جاري جلب الأحاديث...</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="m3-fab-player" id="audio-player-ui">
+        <button class="player-action-btn" id="repeat-btn" onclick="event.stopPropagation();"><span class="material-symbols-rounded">repeat</span></button>
+        <button class="player-action-btn" onclick="event.stopPropagation();"><span class="material-symbols-rounded">skip_next</span></button>
+        <button class="play-main-fab" onclick="event.stopPropagation();"><span class="material-symbols-rounded">play_arrow</span></button>
+        <button class="player-action-btn" onclick="event.stopPropagation(); toggleNightMode()"><span class="material-symbols-rounded">nightlight_round</span></button>
+        <button class="player-action-btn" onclick="event.stopPropagation();"><span class="material-symbols-rounded">skip_previous</span></button>
+        <button class="player-action-btn" onclick="event.stopPropagation(); toggleUI()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="forty_hadith.js"></script> <!-- تم فصل المنطق البرمجي جراحياً -->
+</body>
+</html>

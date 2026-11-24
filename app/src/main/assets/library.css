@@ -1,0 +1,95 @@
+/* تنسيقات شاشة المكتبة الإسلامية - المصحف الكوني */
+:root {
+    --cosmos-bg: #02050A;
+    --cosmos-panel: #0A1628;
+    --cosmos-gold: #D9B24C;
+    --cosmos-text: #E0E6ED;
+    --cosmos-muted: #A8B4C7;
+    --cosmos-border: rgba(217, 178, 76, 0.1);
+}
+
+body {
+    background: var(--cosmos-bg);
+    color: var(--cosmos-text);
+    font-family: 'Tajawal', sans-serif;
+    margin: 0; padding: 0;
+    direction: rtl;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+}
+
+/* الهيدر العلوي */
+.lib-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px; padding-top: calc(env(safe-area-inset-top) + 15px);
+}
+.lib-title {
+    color: var(--cosmos-gold); font-size: 1.85rem; font-weight: 900;
+    margin: 0; flex: 1; text-align: center;
+}
+.back-btn-circle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--cosmos-border);
+    color: var(--cosmos-gold); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.3s;
+}
+.back-btn-circle:active { transform: scale(0.9); }
+
+/* بطاقة الإحصائيات */
+.stats-featured-card {
+    background: var(--cosmos-panel); margin: 0 20px 20px; padding: 22px;
+    border-radius: 28px; border: 1px solid var(--cosmos-border);
+    display: flex; align-items: center; gap: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.stats-icon-box {
+    background: var(--cosmos-gold); color: #02050A; width: 58px; height: 58px;
+    border-radius: 18px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; order: 1;
+}
+.stats-info { display: flex; flex-direction: column; gap: 2px; order: 2; flex: 1; }
+.stats-label { font-size: 0.85rem; color: var(--cosmos-muted); font-weight: 500; }
+.stats-value { font-size: 1.55rem; font-weight: 900; color: #fff; }
+
+/* حاوية البحث */
+.search-container { margin: 0 20px 20px; position: relative; }
+.search-input {
+    width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--cosmos-border);
+    border-radius: 18px; padding: 14px 15px 14px 48px; color: #fff; box-sizing: border-box;
+    font-family: inherit; font-size: 0.95rem; outline: none; text-align: right;
+}
+.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--cosmos-gold); font-size: 1.3rem !important; }
+
+/* أزرار التبويبات */
+.tabs-row { display: flex; gap: 12px; margin: 0 20px 25px; }
+.tab-item {
+    flex: 1; padding: 12px; text-align: center; border-radius: 15px;
+    background: rgba(255,255,255,0.03); font-size: 0.95rem; font-weight: 700;
+    color: var(--cosmos-muted); transition: 0.3s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05);
+}
+.tab-item.active { background: var(--cosmos-gold); color: #02050A; border-color: var(--cosmos-gold); }
+
+/* قائمة الكتب */
+.books-list { padding: 0 20px 120px; display: flex; flex-direction: column; gap: 18px; }
+.book-card-h {
+    background: var(--cosmos-panel); border-radius: 26px; padding: 18px;
+    border: 1px solid var(--cosmos-border); display: flex; align-items: center;
+    gap: 18px; cursor: pointer; transition: 0.3s;
+}
+.book-card-h:active { transform: scale(0.97); background: rgba(217, 178, 76, 0.05); }
+
+.b-icon-right {
+    width: 54px; height: 54px; background: rgba(255,255,255,0.03);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    color: var(--cosmos-gold); flex-shrink: 0; order: 1;
+}
+.book-details { flex: 1; display: flex; flex-direction: column; gap: 4px; order: 2; }
+.b-name { font-weight: 800; font-size: 1.25rem; color: #fff; }
+.b-status { font-size: 0.85rem; color: var(--cosmos-muted); }
+.dl-icon-circle {
+    width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--cosmos-muted);
+    display: flex; align-items: center; justify-content: center; color: var(--cosmos-muted);
+    font-size: 1.5rem !important; flex-shrink: 0; order: 3;
+}

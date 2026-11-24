@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#02050A"
+    android:layoutDirection="rtl">
+
+    <!-- الهيدر -->
+    <LinearLayout
+        android:id="@+id/headerAzkar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#0A1628"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBackAzkar"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="?attr/actionModeCloseDrawable"
+            app:iconTint="@color/white" />
+
+        <TextView
+            android:id="@+id/tvAzkarTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/azkar"
+            android:gravity="center"
+            android:textColor="#D9B24C"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <View android:layout_width="48dp" android:layout_height="48dp" />
+    </LinearLayout>
+
+    <!-- لوحة التذكير بالأذكار الأساسية -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardAzkarHub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="#0D1E3B"
+        app:cardCornerRadius="25dp"
+        app:strokeColor="#33D4AF37"
+        app:strokeWidth="1dp"
+        app:layout_constraintTop_toBottomOf="@+id/headerAzkar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvHubStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="تذكير الأذكار اليومية"
+                android:textColor="#A8B4C7"
+                android:textSize="14sp"
+                android:layout_marginBottom="15dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <!-- شعار الصباح -->
+                <LinearLayout
+                    android:id="@+id/layoutMorning"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView
+                        android:id="@+id/ivMorningLogo"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/bg_stat_item"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_clock"
+                        app:tint="#D9B24C" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="الصباح"
+                        android:textColor="#FFF"
+                        android:textSize="12sp"
+                        android:layout_marginTop="5dp"/>
+                    <TextView
+                        android:id="@+id/tvMorningState"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="غير مقروء"
+                        android:textColor="#88FFFFFF"
+                        android:textSize="9sp"/>
+                </LinearLayout>
+
+                <!-- شعار المساء -->
+                <LinearLayout
+                    android:id="@+id/layoutEvening"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView
+                        android:id="@+id/ivEveningLogo"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/bg_stat_item"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_azkar"
+                        app:tint="#D9B24C" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="المساء"
+                        android:textColor="#FFF"
+                        android:textSize="12sp"
+                        android:layout_marginTop="5dp"/>
+                    <TextView
+                        android:id="@+id/tvEveningState"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="غير مقروء"
+                        android:textColor="#88FFFFFF"
+                        android:textSize="9sp"/>
+                </LinearLayout>
+
+                <!-- شعار النوم -->
+                <LinearLayout
+                    android:id="@+id/layoutSleep"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <ImageView
+                        android:id="@+id/ivSleepLogo"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/bg_stat_item"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_hands_pray"
+                        app:tint="#D9B24C" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="النوم"
+                        android:textColor="#FFF"
+                        android:textSize="12sp"
+                        android:layout_marginTop="5dp"/>
+                    <TextView
+                        android:id="@+id/tvSleepState"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="غير مقروء"
+                        android:textColor="#88FFFFFF"
+                        android:textSize="9sp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQuickStart"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="ابدأ أذكار الوقت الحالي"
+                app:backgroundTint="#D9B24C"
+                android:textColor="#02050A"
+                app:cornerRadius="15dp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- شريط التصنيفات القابل للتمرير -->
+    <HorizontalScrollView
+        android:id="@+id/scrollTabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/cardAzkarHub">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSabah"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="@string/azkar_sabah"
+                app:backgroundTint="#12233D"
+                android:textColor="@color/white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMasaa"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="@string/azkar_masaa"
+                app:backgroundTint="#12233D"
+                android:textColor="@color/white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSleep"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="@string/azkar_sleep"
+                app:backgroundTint="#12233D"
+                android:textColor="@color/white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWake"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="@string/azkar_wake_up"
+                app:backgroundTint="#12233D"
+                android:textColor="@color/white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPray"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="@string/azkar_prayer"
+                app:backgroundTint="#12233D"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAzkar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scrollTabs" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

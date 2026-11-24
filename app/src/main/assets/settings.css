@@ -1,0 +1,161 @@
+/**
+ * settings.css - تصميم شاشة الإعدادات المطور - المصحف الكوني
+ * تم التحديث جراحياً ليتطابق 100% مع التصميم المطلوب في الصورة ويدعم التمرير
+ */
+
+#settings-screen {
+    background: #02050A;
+    height: 100vh; /* تحديد الطول الكلي لمنع مشاكل التمرير */
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    overflow: hidden; /* منع تمرير الشاشة الرئيسية والاعتماد على الجزء الداخلي */
+}
+
+.settings-header {
+    background: #02050A;
+    padding: calc(env(safe-area-inset-top) + 15px) 20px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(217, 178, 76, 0.05);
+    flex-shrink: 0; /* منع انكماش الهيدر عند التمرير */
+    z-index: 10;
+}
+
+.settings-header h2 {
+    color: #D9B24C;
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+}
+
+.btn-head-action {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: #D9B24C; background: none; border: none; cursor: pointer;
+}
+.btn-head-action .material-symbols-rounded { font-size: 28px; }
+
+/* تعليق جراحي: تحسين منطقة المحتوى لتقبل التمرير بسلاسة */
+.settings-content {
+    padding: 20px 18px 120px;
+    flex: 1;
+    overflow-y: auto; /* تفعيل التمرير العمودي */
+    -webkit-overflow-scrolling: touch; /* سلاسة التمرير في أندرويد */
+    scrollbar-width: none; /* إخفاء شريط التمرير لمتصفح فايرفوكس */
+    -ms-overflow-style: none; /* إخفاء شريط التمرير لمتصفح إيدج */
+}
+
+/* إخفاء شريط التمرير لمتصفحات كروم وويب كيت */
+.settings-content::-webkit-scrollbar {
+    display: none;
+}
+
+.settings-group-label {
+    color: #D9B24C;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: 20px 10px 15px 0;
+    opacity: 0.9;
+}
+
+.setting-card {
+    background: rgba(13, 29, 47, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+
+.setting-info {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.setting-texts {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    flex: 1;
+}
+
+.setting-title {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #FFFFFF;
+}
+
+.setting-desc {
+    font-size: 0.85rem;
+    color: #A8B4C7;
+    margin-top: 4px;
+    opacity: 0.8;
+}
+
+.setting-icon-box {
+    color: #D9B24C;
+    font-size: 26px !important;
+}
+
+/* Switch UI */
+.m3-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+    margin-left: 10px;
+}
+
+.m3-switch input { opacity: 0; width: 0; height: 0; }
+
+.m3-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #3E4A59;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 30px;
+}
+
+.m3-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #A8B4C7;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+}
+
+input:checked + .m3-slider { background-color: rgba(217, 178, 76, 0.3); }
+input:checked + .m3-slider:before {
+    transform: translateX(-24px);
+    background-color: #D9B24C;
+}
+
+.setting-select-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(217, 178, 76, 0.3);
+    border-radius: 12px;
+    padding: 8px 12px;
+    color: #D9B24C;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    margin-top: 8px;
+    width: fit-content;
+}

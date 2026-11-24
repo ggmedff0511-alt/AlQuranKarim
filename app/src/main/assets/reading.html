@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>شاشة القراءة - المصحف الكوني</title>
+    <!-- استدعاء الخطوط والرموز اللازمة -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="reading.css">
+</head>
+<body class="reading-body">
+    <div id="reading-screen">
+        <!-- الهيدر العلوي: تعديل جراحي دقيق لمطابقة التصميم المرجعي (أيقونات اليسار، العنوان في الوسط، الرجوع في اليمين) -->
+        <header class="m3-top-app-bar">
+            <div class="m3-bar-actions left-actions">
+                <!-- أيقونة القراء -->
+                <button class="m3-icon-btn" onclick="window.parent.loadPage('reciters')">
+                    <span class="material-symbols-rounded">group</span>
+                </button>
+                <!-- أيقونة العرض/المعرض -->
+                <button class="m3-icon-btn">
+                    <span class="material-symbols-rounded">image</span>
+                </button>
+                <!-- أيقونة المفضلة (النجمة) -->
+                <button class="m3-icon-btn" onclick="toggleBookmark()">
+                    <span class="material-symbols-rounded" id="bookmark-icon">star</span>
+                </button>
+            </div>
+
+            <!-- معلومات السورة المركزية -->
+            <div class="header-center-info">
+                <h2 id="mushaf-surah-title">سورة الفاتحة</h2>
+                <span id="mushaf-juz-info" class="meta-line">الجزء ١</span>
+                <span id="mushaf-reciter-name" class="meta-line gold-text">بصوت ماهر المعيقلي</span>
+            </div>
+
+            <!-- زر الخروج/الرجوع -->
+            <button class="m3-icon-btn exit-btn" onclick="window.parent.loadPage('index')">
+                <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+        </header>
+
+        <!-- منطقة عرض المصحف: بطاقة بتصميم كحلي ملكي وحواف دائرية -->
+        <main class="mushaf-viewport" onclick="handleViewportClick()">
+            <div class="mushaf-page-card">
+                <div id="quran-render-content" class="quran-render">
+                    <!-- يتم ضخ الآيات والبسملة هنا برمجياً -->
+                </div>
+            </div>
+        </main>
+
+        <!-- مشغل الصوت السفلي المخصص (Floating Player) -->
+        <div class="m3-fab-player" id="audio-player-ui">
+            <!-- إغلاق المشغل -->
+            <button class="player-action-btn" onclick="toggleUI()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+
+            <!-- الآية السابقة -->
+            <button class="player-action-btn" onclick="prevAyahAction()">
+                <span class="material-symbols-rounded">skip_previous</span>
+            </button>
+
+            <!-- مؤقت النوم -->
+            <div class="player-btn-wrapper">
+                <button class="player-action-btn" id="sleep-mode-btn" onclick="toggleSleepPopup(event)">
+                    <span class="material-symbols-rounded">nightlight_round</span>
+                </button>
+                <div id="sleep-timer-popup" class="sleep-popup">
+                    <div class="sleep-popup-item" onclick="setSleepTimer(15)">١٥ دقيقة</div>
+                    <div class="sleep-popup-item" onclick="setSleepTimer(30)">٣٠ دقيقة</div>
+                    <div class="sleep-popup-item cancel" onclick="setSleepTimer(0)">إلغاء</div>
+                </div>
+            </div>
+
+            <!-- زر التشغيل الأساسي (تصميم دائري ذهبي) -->
+            <div class="play-center-wrapper">
+                <button class="play-main-fab" id="play-pause-btn" onclick="togglePlayAction()">
+                    <span class="material-symbols-rounded">play_arrow</span>
+                </button>
+            </div>
+
+            <!-- الآية التالية -->
+            <button class="player-action-btn" onclick="nextAyahAction()">
+                <span class="material-symbols-rounded">skip_next</span>
+            </button>
+
+            <!-- زر التكرار -->
+            <button class="player-action-btn" onclick="window.callNative('toggleRepeat')">
+                <span class="material-symbols-rounded">repeat</span>
+            </button>
+        </div>
+
+        <!-- شيت التفسير المنزلق -->
+        <div id="tafsir-bottom-sheet" class="tafsir-sheet">
+            <div class="tafsir-handle"></div>
+            <div class="tafsir-content">
+                <div id="tafsir-body-text">انقر مرتين على الآية لعرض التفسير...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- استدعاء محركات المزامنة -->
+    <script src="script.js"></script>
+    <script src="reading.js"></script>
+</body>
+</html>

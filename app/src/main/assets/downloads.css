@@ -1,0 +1,60 @@
+/**
+ * downloads.css - تنسيقات شاشة التحميلات - المصحف الكوني
+ */
+
+body {
+    background: #020611;
+    color: white;
+    font-family: 'Tajawal', sans-serif;
+    margin: 0; padding: 0;
+    direction: rtl;
+}
+
+.downloads-container { padding: 20px; }
+
+.download-item {
+    background: rgba(13, 29, 47, 0.6);
+    border: 1px solid rgba(217, 178, 76, 0.1);
+    border-radius: 18px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 100px 20px;
+    opacity: 0.5;
+}
+
+.btn-idx-head {
+    background: none;
+    border: none;
+    color: #E8C172;
+    cursor: pointer;
+}
+
+.index-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.index-main-title {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #E8C172;
+}
+
+.btn-empty-action {
+    color: #E8C172;
+    background: none;
+    border: 1px solid;
+    padding: 8px 20px;
+    border-radius: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+}

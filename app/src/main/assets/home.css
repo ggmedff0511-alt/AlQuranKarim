@@ -1,0 +1,124 @@
+/* تنسيقات الشاشة الرئيسية - المصحف الكوني */
+:root {
+    --bg-dark: #020611;
+    --gold-main: #E8C172;
+    --card-navy: #0D1D2F;
+    --text-muted: #A8B4C7;
+    --gold-gradient: linear-gradient(180deg, #E8C172 0%, #B3862B 100%);
+}
+
+/* تعليق جراحي: السماح بالتمرير العمودي وإلغاء القيود الموروثة من common.css */
+html, body {
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+body {
+    background: var(--bg-dark);
+    margin: 0; padding: 15px;
+    padding-bottom: calc(var(--safe-bottom) + 120px); /* زيادة الهامش السفلي لضمان رؤية آخر بطاقة خلف القائمة */
+    color: white;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    box-sizing: border-box;
+    display: block; /* التأكد من تخطيط الكتلة للسماح بالتمدد */
+}
+
+.home-header {
+    padding: 10px 5px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* تعليق جراحي: تنسيق الهيدر المطور ليشمل التاريخ الهجري */
+.greeting-wrapper { flex: 1; text-align: center; }
+.greeting { font-size: 1.1rem; color: #EEE; font-weight: 600; }
+.hijri-date { font-size: 0.8rem; color: var(--gold-main); margin-top: 2px; font-weight: 500; opacity: 0.9; }
+
+.header-icon { color: #A8B4C7; font-size: 28px !important; cursor: pointer; }
+
+/* تعليق جراحي: تحسين كارت مواقيت الصلاة لمنع التداخل اللوني والبصري */
+.prayer-mini-card {
+    background: rgba(13, 29, 47, 0.7);
+    border: 1px solid rgba(232, 193, 114, 0.2);
+    border-radius: 20px; padding: 15px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.prayer-mini-card .prayer-info { display: flex; flex-direction: column; z-index: 2; }
+.prayer-mini-card .next-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
+.prayer-mini-card .prayer-time { font-size: 1.6rem; color: #FFF; font-weight: 900; }
+.prayer-mini-card .prayer-city { font-size: 0.8rem; color: var(--gold-main); font-weight: 600; opacity: 0.8; z-index: 2; }
+
+/* تعليق جراحي: نقل أيقونة المسجد لليمين وتقليل شفافيتها لتجنب التداخل مع اسم المدينة */
+.prayer-mini-card .side-mosque {
+    font-size: 60px !important;
+    color: rgba(232, 193, 114, 0.07);
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    z-index: 1;
+}
+
+.sleep-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.gold-alert-card {
+    background: var(--gold-gradient);
+    border-radius: 20px; padding: 15px; display: flex; align-items: center;
+    justify-content: space-between; color: #020611; box-shadow: 0 8px 25px rgba(179, 134, 43, 0.2);
+    cursor: pointer; transition: transform 0.2s;
+}
+.gold-alert-card:active { transform: scale(0.98); }
+.gold-alert-card .info { text-align: right; flex: 1; padding-right: 15px; }
+.gold-alert-card .label { font-size: 0.75rem; font-weight: 700; opacity: 0.9; }
+.gold-alert-card .title { font-size: 1.3rem; font-weight: 900; }
+.gold-alert-card .side-icon { font-size: 36px !important; }
+
+.last-read-card {
+    background: var(--card-navy); border: 1px solid rgba(232, 193, 114, 0.15);
+    border-radius: 25px; padding: 18px; display: flex; align-items: center;
+    margin-bottom: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); gap: 15px;
+}
+.last-read-card .img-box {
+    width: 80px; height: 80px; border-radius: 15px; border: 2px solid var(--gold-main);
+    overflow: hidden; flex-shrink: 0;
+}
+.last-read-card .img-box img { width: 100%; height: 100%; object-fit: cover; }
+.last-read-card .surah { font-size: 1.4rem; font-weight: 900; margin: 2px 0; color: #FFF; }
+.btn-resume {
+    background: var(--gold-main); color: #020611; border: none; border-radius: 12px;
+    padding: 10px 18px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem;
+}
+
+.tools-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 25px;
+}
+.tool-btn {
+    background: rgba(13, 29, 47, 0.6); border-radius: 18px; padding: 18px 5px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.03); transition: all 0.2s ease;
+}
+.tool-btn:active { transform: scale(0.92); }
+.tool-btn .material-symbols-rounded { font-size: 32px !important; }
+.tool-btn span:last-child { font-size: 0.8rem; font-weight: 700; color: #FFFFFF; text-align: center; }
+
+.clr-gold { color: #FFD700 !important; }
+.clr-blue { color: #64B5F6 !important; }
+.clr-teal { color: #4DB6AC !important; }
+.clr-purple { color: #BA68C8 !important; }
+.clr-cyan { color: #4DD0E1 !important; }
+.clr-orange { color: #FFB74D !important; }
+.clr-indigo { color: #7986CB !important; }
+.clr-pink { color: #F06292 !important; }
+
+.ayah-daily-banner {
+    background: rgba(13, 29, 47, 0.4); border: 1px solid rgba(232, 193, 114, 0.1);
+    border-radius: 25px; padding: 20px; text-align: center;
+    margin-bottom: 20px;
+}
+.ayah-daily-banner .text { font-family: 'Amiri', serif; font-size: 1.5rem; line-height: 1.8; margin-bottom: 10px; color: #FFF; }
+
+@media screen and (max-width: 350px) {
+    .tools-layout { grid-template-columns: repeat(2, 1fr); }
+}

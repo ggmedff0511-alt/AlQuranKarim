@@ -1,0 +1,140 @@
+/* الصفحة الرئيسية - المصحف الكوني - الإصدار القياسي الأصلي */
+:root {
+    --bg-dark: #02050A;
+    --card-bg: #0A1628;
+    --gold-main: #D9B24C;
+    --text-white: #FFFFFF;
+    --text-muted: #A8B4C7;
+    --gold-grad: linear-gradient(135deg, #F9D976 0%, #D9B24C 100%);
+    --card-border: rgba(217, 178, 76, 0.15);
+}
+
+#home-screen {
+    background: var(--bg-dark);
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-white);
+    font-family: 'Tajawal', sans-serif;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+}
+
+.home-header {
+    padding: calc(env(safe-area-inset-top) + 8px) 15px 4px;
+    flex-shrink: 0;
+}
+
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.circle-btn {
+    width: 38px; height: 38px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 50%;
+    color: var(--gold-main);
+    display: flex; align-items: center; justify-content: center;
+}
+.circle-btn .material-symbols-rounded { font-size: 20px; }
+
+.app-title-gold {
+    color: var(--gold-main);
+    font-family: 'Reem Kufi', sans-serif;
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: bold;
+}
+
+.home-scroll-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 5px 12px;
+    gap: 10px;
+    justify-content: flex-start;
+    overflow-y: auto;
+}
+
+/* بطاقة آخر قراءة */
+.last-read-card {
+    flex-shrink: 0;
+    height: 80px;
+    background: linear-gradient(145deg, #0D1D2F 0%, #060F1A 100%);
+    border-radius: 16px;
+    padding: 0 15px;
+    border: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-visual img { width: 40px; filter: drop-shadow(0 0 8px rgba(217, 178, 76, 0.4)); }
+.card-info .surah { color: white; font-size: 0.95rem; margin: 0; font-weight: bold; }
+.card-info .ayah { color: var(--text-muted); font-size: 0.7rem; }
+
+/* شبكة الأدوات - 4 أعمدة قياسية */
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.tool-item { display: flex; flex-direction: column; align-items: center; }
+.icon-box {
+    width: 48px; height: 48px;
+    background: rgba(18, 35, 61, 0.4);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    color: var(--gold-main);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.tool-label { color: var(--text-muted); font-size: 0.6rem; margin-top: 4px; text-align: center; }
+
+/* بطاقة الورد */
+.wird-card {
+    background: rgba(18, 35, 61, 0.3);
+    border-radius: 14px;
+    padding: 8px 15px;
+    flex-shrink: 0;
+}
+.wird-header h4 { color: white; font-size: 0.75rem; margin: 0 0 4px; }
+.progress-wrap { height: 4px; background: rgba(255,255,255,0.06); border-radius: 10px; position: relative; }
+.progress-bar-fill { height: 100%; background: #4CAF50; border-radius: 10px; }
+.progress-percentage { position: absolute; right: 0; top: -14px; font-size: 0.6rem; color: #81C784; }
+
+/* آية اليوم - شريط نحيف (طلبك الأصلي) */
+.ayah-day-card {
+    flex-shrink: 0;
+    height: 50px;
+    background: linear-gradient(135deg, #071F2C 0%, #0A1423 100%);
+    border-radius: 12px;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(217, 178, 76, 0.1);
+}
+.ayah-txt { font-size: 0.85rem; flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Amiri', serif; }
+
+/* الشريط السفلي القياسي */
+.bottom-nav-main {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+    background: rgba(10, 22, 40, 0.98);
+    backdrop-filter: blur(15px);
+    display: flex; justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    z-index: 1000;
+}
+
+.nav-link-item { text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--text-muted); flex: 1; }
+.nav-link-item.active { color: var(--gold-main); }
+.nav-link-item .material-symbols-rounded { font-size: 20px; }
+.nav-link-item span { font-size: 0.65rem; }

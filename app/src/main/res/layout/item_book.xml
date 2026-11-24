@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="#1AFFFFFF"
+    app:strokeColor="#33FFD700"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvBookTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="اسم الكتاب"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/gold_glow" />
+
+            <TextView
+                android:id="@+id/tvBookSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="الحجم: 15MB"
+                android:textSize="14sp"
+                android:textColor="#B0FFFFFF"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp">
+
+            <!-- الحالة 1: زر التحميل -->
+            <ImageButton
+                android:id="@+id/btnDownload"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/stat_sys_download"
+                app:tint="@color/gold_glow"
+                android:visibility="visible" />
+
+            <!-- الحالة 2: جاري التحميل -->
+            <ProgressBar
+                android:id="@+id/pbDownloading"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/gold_glow"
+                android:visibility="gone" />
+
+            <!-- الحالة 3: متاح أوفلاين -->
+            <ImageView
+                android:id="@+id/ivDownloaded"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/checkbox_on_background"
+                app:tint="#4CAF50"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <ImageButton
+            android:id="@+id/btnOptions"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_more"
+            app:tint="#80FFFFFF"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

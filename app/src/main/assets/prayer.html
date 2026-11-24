@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>مواقيت الصلاة</title>
+    <!-- استدعاء الخطوط والتنسيقات الخارجية حصراً (Surgical Edit) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" />
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="prayer.css">
+</head>
+<body class="prayer-body">
+    <div id="prayer-screen">
+        <header class="p-header">
+            <button class="p-btn-square" onclick="goBack()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+            <h1 class="p-header-title">مواقيت الصلاة</h1>
+            <!-- تعليق جراحي: تم حذف زر الانتقال للواجهة الأصلية لمنع تكرار الشاشات والاكتفاء بالواجهة الحديثة المطورة -->
+            <button class="p-btn-square" onclick="refreshData()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
+        </header>
+
+        <main class="p-scroll-area">
+            <!-- تعليق جراحي: تطوير واجهة العد التنازلي وإضافة اسم المدينة المكتشفة -->
+            <div class="p-hero-card" onclick="testAzanSound()">
+                <div class="p-hero-prefix" id="next-prayer-title">صلاة ...</div>
+                <div class="p-hero-bottom-row"><div class="p-countdown-val" id="countdown-timer">00:00:00</div></div>
+
+                <!-- عنصر عرض المدينة المضاف جراحياً -->
+                <div id="city-name-display" style="font-size: 0.95rem; color: #A8B4C7; margin-top: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">location_on</span>
+                    <span id="city-text">جاري تحديد الموقع...</span>
+                </div>
+
+                <div class="p-hero-dates-side" id="hijri-date-val">-- -------- ---- هـ</div>
+                <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 8px; color: #E8C172;">اضغط هنا لتجربة صوت الأذان</div>
+            </div>
+
+            <div class="p-grid-container">
+                <div class="p-grid-item" id="card-fajr"><span class="p-grid-label">الفجر</span><span class="p-grid-time" id="time-fajr">--:--</span></div>
+                <div class="p-grid-item" id="card-shurooq"><span class="p-grid-label">الشروق</span><span class="p-grid-time" id="time-shurooq">--:--</span></div>
+                <div class="p-grid-item" id="card-dhuhr"><span class="p-grid-label">الظهر</span><span class="p-grid-time" id="time-dhuhr">--:--</span></div>
+                <div class="p-grid-item" id="card-asr"><span class="p-grid-label">العصر</span><span class="p-grid-time" id="time-asr">--:--</span></div>
+                <div class="p-grid-item" id="card-maghrib"><span class="p-grid-label">المغرب</span><span class="p-grid-time" id="time-maghrib">--:--</span></div>
+                <div class="p-grid-item" id="card-isha"><span class="p-grid-label">العشاء</span><span class="p-grid-time" id="time-isha">--:--</span></div>
+            </div>
+
+            <div class="p-sub-card">
+                <div class="p-sub-header">بوصلة اتجاه القبلة</div>
+                <div class="p-compass-container">
+                    <div class="compass-ticks" id="ticks-container"></div>
+                    <div class="south-indicator"></div>
+                    <!-- مجسم الكعبة المشرفة 3D واقعي مطور -->
+                    <div class="kaaba-fixed-marker">
+                        <div class="kaaba-visual-cube">
+                            <div class="kaaba-face face-front"></div>
+                            <div class="kaaba-face face-top"></div>
+                            <div class="kaaba-face face-right"></div>
+                        </div>
+                    </div>
+                    <div class="qibla-pointer-needle" id="main-needle-pointer"></div>
+                </div>
+                <div class="p-qibla-deg" id="qibla-val-text">0°</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- استدعاء المنطق البرمجي الخارجي لضمان نظافة الكود -->
+    <script src="script.js"></script>
+    <script src="prayer.js"></script>
+</body>
+</html>

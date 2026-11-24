@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+    <header class="home-header">
+        <span class="material-symbols-rounded header-icon">notifications</span>
+        <div class="greeting-wrapper">
+            <div class="greeting">السلام عليكم</div>
+            <!-- تعليق جراحي: إضافة عرض التاريخ الهجري في الهيدر لتعزيز محتوى الشاشة -->
+            <div id="hijri-date-display" class="hijri-date">جاري التحميل...</div>
+        </div>
+        <span class="material-symbols-rounded header-icon" onclick="window.parent.loadPage('settings')">settings</span>
+    </header>
+
+    <!-- تعليق جراحي: تم حذف كارت مواقيت الصلاة المصغر من أعلى الشاشة الرئيسية حسب طلب المستخدم لتغيير التنسيق -->
+
+    <div class="sleep-stack" id="sleep-azkar-wrapper" style="display: none;">
+        <div class="gold-alert-card" onclick="window.parent.loadPage('azkar')">
+            <span class="material-symbols-rounded">chevron_left</span>
+            <div class="info">
+                <div class="label">حان الآن وقت</div>
+                <div class="title">أذكار النوم</div>
+            </div>
+            <span class="material-symbols-rounded side-icon">dark_mode</span>
+        </div>
+    </div>
+
+    <section class="last-read-card" onclick="window.parent.loadPage('reading')">
+        <div class="img-box">
+            <img src="snnng.jpg" alt="Quran">
+        </div>
+        <div class="content">
+            <span class="tag">آخر ما قرأت</span>
+            <div class="surah" id="last-surah-name">سورة الفاتحة</div>
+            <div class="ayah" id="last-ayah-info">الآية ١</div>
+            <button class="btn-resume">
+                <span>متابعة التلاوة</span>
+                <span class="material-symbols-rounded" style="font-size: 18px !important;">play_arrow</span>
+            </button>
+        </div>
+    </section>
+
+    <div class="tools-layout">
+        <div class="tool-btn" onclick="window.parent.loadPage('surah_list')">
+            <span class="material-symbols-rounded clr-gold">menu_book</span>
+            <span>القرآن</span>
+        </div>
+        <div class="tool-btn" onclick="window.parent.loadPage('reciters')">
+            <span class="material-symbols-rounded clr-blue">headphones</span>
+            <span>التلاوات</span>
+        </div>
+        <div class="tool-btn" onclick="window.parent.loadPage('prayer')">
+            <span class="material-symbols-rounded clr-teal">mosque</span>
+            <span>المواقيت</span>
+        </div>
+        <div class="tool-btn" onclick="window.parent.loadPage('azkar')">
+            <span class="material-symbols-rounded clr-purple">auto_awesome</span>
+            <span>الأذكار</span>
+        </div>
+        <div class="tool-btn" onclick="window.parent.loadPage('tasbeeh')">
+            <span class="material-symbols-rounded clr-cyan">ads_click</span>
+            <span>التسبيح</span>
+        </div>
+        <div class="tool-btn" onclick="window.parent.loadPage('library')">
+            <span class="material-symbols-rounded clr-orange">local_library</span>
+            <span>المكتبة</span>
+        </div>
+        <div class="tool-btn" onclick="window.parent.loadPage('downloads')">
+            <span class="material-symbols-rounded clr-indigo">cloud_download</span>
+            <span>التحميلات</span>
+        </div>
+        <div class="tool-btn" onclick="window.parent.loadPage('salat_nabi')">
+            <span class="material-symbols-rounded clr-pink">favorite</span>
+            <span>النبي ﷺ</span>
+        </div>
+    </div>
+
+    <div class="ayah-daily-banner">
+        <div class="header">
+            <span class="material-symbols-rounded" style="font-size: 20px !important;">notifications</span>
+            <span>تنبيه آية اليوم</span>
+        </div>
+        <p class="text" id="daily-ayah-text">﴿ فَٱذْكُرُونِي أَذْكُرْكُمْ ﴾</p>
+        <div class="ref" id="daily-ayah-ref">سورة البقرة: ١٥٢</div>
+    </div>
+
+    <script src="home.js"></script>
+</body>
+</html>

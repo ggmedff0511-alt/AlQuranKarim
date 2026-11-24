@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>المسبحة الإلكترونية - المصحف الكوني</title>
+    <!-- استدعاء الخطوط والتنسيقات الخارجية -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="tasbeeh.css">
+</head>
+<body>
+    <div id="tasbeeh-screen" class="tasbeeh-container">
+        <header class="tasbeeh-header">
+            <!-- تعليق جراحي: إضافة عرض لإجمالي التسبيحات لتعزيز التحفيز -->
+            <div class="tasbeeh-total-box">
+                <span class="total-label">إجمالي التسبيحات</span>
+                <span class="total-val" id="total-tasbeeh">٠</span>
+            </div>
+            <button class="btn-idx-head" onclick="goBack()">
+                <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+        </header>
+
+        <div class="tasbeeh-top-info">
+            <div class="tasbeeh-cycle-info" id="cycle-label">الدورة: ١</div>
+            <!-- ميزة الهدف الذكي: تمكين المستخدم من متابعة تقدمه نحو هدف محدد -->
+            <div class="tasbeeh-goal-info" onclick="changeGoal()">الهدف: <span id="goal-val">٣٣</span></div>
+        </div>
+
+        <!-- تعليق جراحي: الهيكل المطور مع حلقة التقدم الدائرية التفاعلية -->
+        <div class="tasbeeh-main-area">
+            <div class="tasbeeh-circle-outer" onclick="runTasbeeh()">
+                <svg class="progress-ring" width="320" height="320">
+                    <circle class="progress-ring__circle-bg" stroke="rgba(217, 178, 76, 0.1)" stroke-width="8" fill="transparent" r="145" cx="160" cy="160"/>
+                    <circle class="progress-ring__circle" id="progress-bar" stroke="#D9B24C" stroke-width="8" fill="transparent" r="145" cx="160" cy="160"/>
+                </svg>
+                <div class="tasbeeh-circle-inner"></div>
+                <div class="tasbeeh-data">
+                    <div class="tasbeeh-count" id="tasbeeh-val">٠</div>
+                    <div class="tasbeeh-label-text" id="tasbeeh-text">سبحان الله</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- أزرار التحكم والذكاء -->
+        <div class="tasbeeh-footer">
+            <div class="tasbeeh-quick-goals">
+                <button onclick="setGoal(33)">٣٣</button>
+                <button onclick="setGoal(100)">١٠٠</button>
+                <button onclick="setGoal(1000)">١٠٠٠</button>
+            </div>
+            <div class="tasbeeh-actions">
+                <button class="btn-tasbeeh-reset" onclick="resetTasbeehAction()">
+                    <span class="material-symbols-rounded">refresh</span>
+                    <span>إعادة التصفير</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="tasbeeh.js"></script>
+</body>
+</html>

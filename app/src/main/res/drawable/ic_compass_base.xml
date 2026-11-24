@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Outer Circle -->
+    <path
+        android:pathData="M100,100m-90,0a90,90 0,1 1,180 0a90,90 0,1 1,-180 0"
+        android:strokeWidth="2"
+        android:strokeColor="#D4AF37" />
+    <!-- Directions -->
+    <path
+        android:pathData="M100,20L100,30M100,170L100,180M20,100L30,100M170,100L180,100"
+        android:strokeWidth="2"
+        android:strokeColor="#D4AF37" />
+</vector>

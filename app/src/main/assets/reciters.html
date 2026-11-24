@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>قائمة القراء - المصحف الكوني</title>
+    <!-- استدعاء الخطوط والأيقونات الموحدة -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="reciters.css">
+</head>
+<body>
+    <div id="reciters-screen">
+        <header class="index-header">
+            <div class="index-top-row">
+                <!-- تعليق جراحي: موازنة الهيدر لوضع العنوان في المنتصف -->
+                <div style="width: 42px;"></div>
+
+                <h1 class="index-main-title">اختر القارئ</h1>
+
+                <!-- تعليق جراحي: نقل زر الرجوع لليسار كما في التصميم المرفق وتغيير الأيقونة -->
+                <button class="btn-idx-head" onclick="window.parent.loadPage('home')">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+            </div>
+
+            <!-- تعليق جراحي: تحديث هيكلية صندوق البحث لوضع الأيقونة على اليسار وتحديث نص التلميح -->
+            <div class="index-search-box">
+                <input type="text"
+                       class="index-search-input"
+                       placeholder="بحث باسم القارئ..."
+                       oninput="window.filterReciters(this.value)">
+                <span class="material-symbols-rounded" style="color: #D9B24C; opacity: 0.8; font-size: 1.4rem !important;">search</span>
+            </div>
+        </header>
+
+        <main class="reciter-list-scroll">
+            <!-- تعليق جراحي: تحسين التسمية لتطابق التصميم -->
+            <div class="reciters-count-tag" id="reciters-count-label">كل القراء (٩٥ قارئ)</div>
+            <div id="reciters-list-container">
+                <div style="text-align:center; padding:50px; opacity:0.6;">
+                    <div class="loader-spinner"></div>
+                    <p style="margin-top:15px;">جاري تحميل قائمة القراء...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="reciters.js"></script>
+</body>
+</html>

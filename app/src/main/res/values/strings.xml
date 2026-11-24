@@ -1,0 +1,49 @@
+<resources>
+    <string name="app_name">المصحف الكوني</string>
+    <string name="welcome_msg">مرحباً بك في رحاب القرآن</string>
+    <string name="privacy_policy">سياسة الخصوصية</string>
+    <string name="back">رجوع</string>
+    <string name="daily_werd">الورد اليومي</string>
+    <string name="daily_werd_desc">حافظ على وردك اليومي لتبقى متصلاً بكتاب الله الكريم</string>
+    <string name="continue_now">متابعة الآن</string>
+    <string name="main_services">الخدمات الرئيسية</string>
+    <string name="quran">المصحف</string>
+    <string name="recitations">التلاوات</string>
+    <string name="azkar_short">الأذكار</string>
+    <string name="prayer_times_short">المواقيت</string>
+    <string name="islamic_library">المكتبة الإسلامية</string>
+    <string name="quran_reading">قراءة القرآن الكريم</string>
+    <string name="listen_recitations">الاستماع إلى التلاوات بدون نت</string>
+    <string name="azkar">الأذكار والأدعية</string>
+    <string name="prayer_times">مواقيت الصلاة</string>
+    <string name="ongoing_charity">صدقة جارية</string>
+    <string name="fajr">الفجر</string>
+    <string name="sunrise">الشروق</string>
+    <string name="dhuhr">الظهر</string>
+    <string name="asr">العصر</string>
+    <string name="maghrib">المغرب</string>
+    <string name="isha">العشاء</string>
+    <string name="loading">جاري التحميل…</string>
+    <string name="next_prayer">الصلاة القادمة</string>
+    <string name="next_prayer_countdown">موعد %1$s خلال:</string>
+    <string name="azan_is_playing">الأذان يعمل الآن…</string>
+    <string name="now_azan_time">حان الآن موعد أذان</string>
+    <string name="stop_azan">إيقاف الأذان</string>
+    <string name="privacy_content">تاريخ التحديث: فبراير 2026\n\nنحن في تطبيق \'المصحف الكوني\' نولي أهمية كبرى لخصوصيتك. توضح هذه الصفحة كيف نتعامل مع بياناتك لضمان أمانك التام…</string>
+
+    <!-- Azkar Strings -->
+    <string name="azkar_wake_up">أذكار الاستيقاظ</string>
+    <string name="azkar_prayer">أذكار الصلاة</string>
+    <string name="azkar_sabah">أذكار الصباح</string>
+    <string name="azkar_masaa">أذكار المساء</string>
+    <string name="azkar_sleep">أذكار النوم</string>
+    <string name="azkar_read">تمت القراءة</string>
+    <string name="azkar_unread">لم يقرأ بعد</string>
+    <string name="azkar_quick_start">ابدأ أذكار الوقت الحالي</string>
+
+    <!-- Hadith Library Strings -->
+    <string name="book_size_label">الحجم التقريبي: %1$s</string>
+    <string name="download_book">تحميل الكتاب</string>
+    <string name="delete_book_data">حذف بيانات الكتاب</string>
+    <string name="offline_available">متاح أوفلاين</string>
+</resources>

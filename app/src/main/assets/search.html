@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>البحث المتقدم - المصحف الكوني</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="search.css">
+</head>
+<body>
+    <header class="search-header">
+        <button class="back-btn" onclick="window.parent.loadPage('home')">
+            <span class="material-symbols-rounded">arrow_forward</span>
+        </button>
+        <div class="search-box-wrapper">
+            <span class="material-symbols-rounded search-input-icon">search</span>
+            <input type="text" id="main-search-input" placeholder="ابحث في القرآن أو الحديث..." oninput="onSearchInput(this.value)">
+            <!-- تعليق جراحي: إضافة زر مسح النص وأيقونة البحث الصوتي لتحسين التفاعل -->
+            <span id="clear-search-btn" class="material-symbols-rounded" style="display:none; cursor:pointer; font-size:20px; color:var(--cosmos-muted); margin:0 5px;" onclick="clearSearch()">close</span>
+            <span class="material-symbols-rounded" style="cursor:pointer; font-size:22px; color:var(--cosmos-gold);" onclick="startVoiceSearch()">mic</span>
+        </div>
+    </header>
+
+    <div class="search-filter-tabs">
+        <div class="tab active" onclick="switchSearchTab(this, 'all')">الكل</div>
+        <div class="tab" onclick="switchSearchTab(this, 'quran')">القرآن</div>
+        <div class="tab" onclick="switchSearchTab(this, 'hadith')">الأحاديث</div>
+    </div>
+
+    <main id="search-results-container">
+        <div class="empty-state">
+            <span class="material-symbols-rounded">manage_search</span>
+            <p>اكتب كلمة للبحث في كتاب الله وسنة نبيه ﷺ</p>
+        </div>
+    </main>
+
+    <script src="search.js"></script>
+</body>
+</html>

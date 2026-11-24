@@ -1,0 +1,119 @@
+/*
+   تصميم شاشة مواقيت الصلاة النهائي - المصحف الكوني
+   تصميم كعبة CSS نقي لمنع ظهور نصوص KAABA + إبرة صفراء تتحول للأخضر
+*/
+
+:root {
+    --bg-main: #020611;
+    --gold-king: #E8C172;
+    --green-aligned: #00FF00;
+    --yellow-needle: #FFD700;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Inter:wght@700;900&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body.p-body-final {
+    background-color: var(--bg-main);
+    color: #FFFFFF;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#p-screen-final { display: flex; flex-direction: column; height: 100vh; }
+
+.p-header {
+    padding: calc(env(safe-area-inset-top) + 20px) 20px 15px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.p-btn-square {
+    width: 46px; height: 46px;
+    border: 1.5px solid rgba(232, 193, 114, 0.2);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--gold-king);
+    cursor: pointer;
+}
+.p-header-title { color: var(--gold-king); font-size: 1.6rem; font-weight: 900; }
+
+.p-scroll-area { flex: 1; overflow-y: auto; padding-bottom: 30px; scrollbar-width: none; }
+.p-scroll-area::-webkit-scrollbar { display: none; }
+
+.p-hero-card {
+    margin: 15px 20px; border-radius: 30px; padding: 25px;
+    border: 1px solid rgba(232, 193, 114, 0.15);
+    background: linear-gradient(145deg, #0D1D2F 0%, #060F1A 100%);
+    display: flex; flex-direction: column; align-items: center;
+}
+.p-countdown-val { font-size: 3rem; font-weight: 900; color: var(--gold-king); font-family: 'Inter', sans-serif; }
+.p-hero-dates-side { color: var(--gold-king); font-weight: 700; font-size: 1.2rem; margin-top: 5px; }
+
+.p-grid-container {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; padding: 0 20px; margin-top: 10px;
+}
+.p-grid-item {
+    background: rgba(13, 29, 47, 0.5); border-radius: 18px;
+    padding: 15px 5px; display: flex; flex-direction: column; align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.p-grid-item.active { border: 1.5px solid var(--gold-king); background: rgba(232, 193, 114, 0.08); }
+
+.p-sub-card {
+    background: rgba(13, 29, 47, 0.3); border-radius: 35px;
+    padding: 25px; margin: 20px; border: 1px solid rgba(232, 193, 114, 0.1);
+    display: flex; flex-direction: column; align-items: center;
+}
+
+.p-compass-wrap {
+    width: 230px; height: 230px; position: relative;
+    border-radius: 50%;
+    background: radial-gradient(circle, #0D1D2F 30%, #020611 100%);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+/* الكعبة المشرفة - تصميم CSS نقي لا يستخدم أي نصوص */
+.kaaba-fixed-marker {
+    position: absolute; top: 15px; left: 50%;
+    transform: translateX(-50%); z-index: 100;
+}
+.kaaba-cube-box {
+    width: 42px; height: 42px; background: #000000;
+    border: 1.8px solid var(--gold-king); border-radius: 8px;
+    position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+}
+.kaaba-cube-box::after {
+    content: ''; position: absolute; top: 10px; left: 0; right: 0;
+    height: 4.5px; background: var(--gold-king);
+    box-shadow: 0 0 5px var(--gold-king);
+}
+
+/* إبرة القبلة - صفراء افتراضياً وشكل مدبب فخم */
+.qibla-live-needle {
+    position: absolute; top: 50%; left: 50%;
+    width: 10px; height: 105px;
+    background: var(--yellow-needle);
+    clip-path: polygon(50% 0%, 100% 100%, 50% 88%, 0% 100%);
+    transform: translate(-50%, -100%) rotate(0deg);
+    transform-origin: bottom center;
+    z-index: 10;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    transition: transform 0.1s linear, background 0.3s ease;
+}
+
+/* الحالة الصحيحة: أخضر مضيء */
+.qibla-live-needle.perfect {
+    background: var(--green-aligned) !important;
+    box-shadow: 0 0 25px var(--green-aligned);
+}
+
+.p-qibla-deg-text {
+    color: var(--gold-king); font-size: 2.5rem; font-weight: 900;
+    margin-top: 20px; font-family: 'Inter', sans-serif;
+    transition: color 0.3s ease;
+}
+.p-qibla-deg-text.perfect { color: var(--green-aligned); }

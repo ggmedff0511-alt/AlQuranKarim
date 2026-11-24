@@ -1,0 +1,91 @@
+/* تصميم شاشة الترحيب الاحترافية - المصحف الكوني */
+
+#splash-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    background-color: #020611;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    text-align: center;
+    padding: 40px 20px;
+    box-sizing: border-box;
+    direction: rtl;
+    /* دعم الحركات الانسيابية */
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* هلال ذهبي علوي جهة اليسار كما في الصورة الأصلية */
+.crescent-top {
+    position: absolute; top: 40px; left: 40px;
+    width: 45px; height: 45px;
+    border-radius: 50%; box-shadow: -10px 10px 0 0 #D9B24C;
+    opacity: 0.5; z-index: 1; transform: rotate(15deg);
+}
+
+/* وهج مركزي خلف الشعار لزيادة الفخامة */
+.central-glow {
+    position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(217, 178, 76, 0.15) 0%, transparent 70%);
+    z-index: 1;
+}
+
+.logo-glow-wrap {
+    position: relative; width: 140px; height: 140px;
+    margin: 0 auto 15px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+}
+
+.logo-img-main {
+    width: 130px; height: 130px; border-radius: 50%;
+    border: 3px solid rgba(232, 193, 114, 0.5);
+    box-shadow: 0 0 30px rgba(0,0,0,0.9);
+    object-fit: cover;
+}
+
+.welcome-title-text {
+    color: #E8C172; font-size: 2.8rem; font-weight: 900;
+    margin: 10px 0 5px; font-family: 'Tajawal', sans-serif;
+}
+
+.welcome-tagline {
+    color: #A8B4C7; font-size: 1.1rem; opacity: 0.8; font-weight: 600;
+    margin-bottom: 30px;
+}
+
+/* بطاقة الآية الكريمة: تصميم مطابق للصورة الأولى */
+.verse-card-splash {
+    background: rgba(13, 29, 47, 0.6);
+    border: 1px solid rgba(232, 193, 114, 0.2);
+    border-radius: 30px; padding: 35px 25px;
+    width: 90%; max-width: 400px;
+    margin: 0 auto 40px; z-index: 10;
+    box-sizing: border-box;
+}
+
+.verse-txt-splash {
+    font-family: 'Amiri', serif; font-size: 1.6rem;
+    line-height: 1.8; color: #FFF; margin-bottom: 20px;
+}
+
+.verse-ref-splash { color: #E8C172; font-size: 1rem; font-weight: 800; }
+
+/* الزر الذهبي العريض - تم رفعه بمقدار 15 بكسل إضافية (إجمالي 30 بكسل) حسب الطلب (Surgical Edit) */
+.btn-start-journey {
+    background: linear-gradient(180deg, #E8C172 0%, #B3862B 100%);
+    color: #020611; width: 90%; max-width: 380px;
+    padding: 18px; border-radius: 50px; border: none;
+    font-size: 1.5rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; gap: 15px;
+    box-shadow: 0 10px 25px rgba(179, 134, 43, 0.4);
+    cursor: pointer; transition: 0.3s; z-index: 20;
+    transform: translateY(-30px); /* رفع الزر بمقدار 30 بكسل عن موضعه الأصلي */
+}
+.btn-start-journey:active { transform: scale(0.97) translateY(-30px); }

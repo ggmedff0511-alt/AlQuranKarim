@@ -1,0 +1,173 @@
+/* splash.css - النسخة النهائية: عرض الآية كاملة مع الحفاظ على التنسيق المرفوع */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;700&display=swap');
+
+#splash-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #030812;
+    background: radial-gradient(circle at 50% 30%, #0B1E3B 0%, #030812 100%);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    overflow: hidden;
+}
+
+.stars-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image:
+        radial-gradient(1px 1px at 20% 10%, #fff, rgba(0,0,0,0)),
+        radial-gradient(1.2px 1.2px at 80% 20%, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 40% 50%, #fff, rgba(0,0,0,0));
+    background-size: 300px 300px;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.crescent-moon {
+    position: absolute;
+    top: 10px; left: 15px;
+    width: 25px; height: 25px;
+    border-radius: 50%;
+    box-shadow: -6px 6px 0 0 #D9B24C;
+    transform: rotate(-15deg);
+    opacity: 0.4;
+}
+
+.content-wrapper {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    max-width: 450px;
+    padding: 10px 24px 20px; /* تقليل الحشو لضمان ظهور النص والزر */
+    box-sizing: border-box;
+    justify-content: space-between;
+}
+
+.welcome-header {
+    text-align: center;
+    width: 100%;
+}
+
+.main-logo-q {
+    width: clamp(80px, 15vh, 120px);
+    height: clamp(80px, 15vh, 120px);
+    border-radius: 50%;
+    overflow: hidden;
+    background: #0B1E3B;
+    border: 2px solid rgba(217, 178, 76, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 5px;
+}
+
+.main-logo-q img {
+    width: 85%; height: 85%; object-fit: contain;
+}
+
+.welcome-title {
+    color: #E8C172;
+    font-size: clamp(1.5rem, 4vh, 2rem);
+    margin: 0;
+    font-weight: 800;
+}
+
+.welcome-subtitle {
+    color: #A8B4C7;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.ornament { width: 20px; height: 1px; background: linear-gradient(90deg, transparent, #D9B24C, transparent); }
+
+.decorative-card-box {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(13, 35, 66, 0.9) 0%, rgba(5, 15, 31, 0.98) 100%);
+    border: 1px solid rgba(217, 178, 76, 0.2);
+    border-radius: 20px;
+    padding: 15px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.card-border-frame {
+    border: 1px dashed rgba(217, 178, 76, 0.1);
+    border-radius: 15px;
+    padding: 10px;
+}
+
+.verse-main-text {
+    font-family: 'Amiri', serif;
+    color: #FFFFFF;
+    font-size: clamp(1.1rem, 2.8vh, 1.4rem); /* تصغير طفيف ليتناسب النص الكامل */
+    line-height: 1.6;
+    margin: 0 0 10px;
+    text-align: center;
+}
+
+.ayah-reference-line {
+    color: #D9B24C;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.card-divider-gold {
+    height: 1px;
+    width: 50%;
+    background: linear-gradient(90deg, transparent, rgba(217, 178, 76, 0.4), transparent);
+    margin: 0 auto 15px;
+}
+
+.card-description-text {
+    color: #bdc8d9;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+.splash-action-footer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.gold-button-large {
+    width: 100%;
+    max-width: 300px;
+    background: linear-gradient(180deg, #F3D08C 0%, #B3862B 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 14px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #040B16;
+    font-weight: 800;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+.gold-button-large:active { transform: scale(0.98); }
+
+.skip-link-btn {
+    background: none; border: none;
+    color: #A8B4C7;
+    font-size: 0.9rem;
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- North Needle (Red) -->
+    <path
+        android:fillColor="#FF0000"
+        android:pathData="M100,100 L110,100 L100,30 L90,100 Z" />
+    <!-- South Needle (White) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M100,100 L110,100 L100,170 L90,100 Z" />
+</vector>

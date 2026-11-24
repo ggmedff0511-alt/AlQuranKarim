@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>فهرس السور - المصحف الكوني</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Amiri:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="common.css?v=2.7">
+    <link rel="stylesheet" href="style.css?v=2.7">
+    <link rel="stylesheet" href="surah_list.css?v=2.7">
+    <style>
+        @keyframes pulse-gold {
+            0% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; color: #E8C172; }
+            100% { transform: scale(1); opacity: 0.6; }
+        }
+        .downloading-act { animation: pulse-gold 1s infinite; }
+        #surah-list-container { min-height: 200px; }
+        .download-icon.downloaded { color: #ff5252; } /* لون أيقونة الحذف */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="back-btn-box" onclick="window.parent.loadPage('home')">
+            <span class="material-symbols-rounded">arrow_forward</span>
+        </div>
+        <h1 class="page-title-main">فهرس القرآن</h1>
+    </header>
+
+    <div class="search-area">
+        <div class="search-input-wrap">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" id="surahSearch" placeholder="بحث باسم السورة أو رقمها..." oninput="filterSurahs()">
+        </div>
+    </div>
+
+    <main class="surah-grid" id="surah-list-container"></main>
+
+    <script src="script.js?v=2.7"></script>
+    <script>
+        window.toArDigits = window.toArDigits || function(n) {
+            if (n === null || n === undefined) return "٠";
+            const id = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+            return String(n).replace(/[0-9]/g, function(w) { return id[parseInt(w)]; });
+        };
+
+        window.decodeSafeData = function(b64) {
+            try { return decodeURIComponent(escape(atob(b64))); } catch(e) {
+                try { return atob(b64); } catch(e2) { return b64; }
+            }
+        };
+
+        const QURAN_CHAPTERS = [
+            {"id": 1, "name": "الفاتحة", "type": "مكية", "ayahs": 7}, {"id": 2, "name": "البقرة", "type": "مدنية", "ayahs": 286},
+            {"id": 3, "name": "آل عمران", "type": "مدنية", "ayahs": 200}, {"id": 4, "name": "النساء", "type": "مدنية", "ayahs": 176},
+            {"id": 5, "name": "المائدة", "type": "مدنية", "ayahs": 120}, {"id": 6, "name": "الأنعام", "type": "مكية", "ayahs": 165},
+            {"id": 7, "name": "الأعراف", "type": "مكية", "ayahs": 206}, {"id": 8, "name": "الأنفال", "type": "مدنية", "ayahs": 75},
+            {"id": 9, "name": "التوبة", "type": "مدنية", "ayahs": 129}, {"id": 10, "name": "يونس", "type": "مكية", "ayahs": 109},
+            {"id": 11, "name": "هود", "type": "مكية", "ayahs": 123}, {"id": 12, "name": "يوسف", "type": "مكية", "ayahs": 111},
+            {"id": 13, "name": "الرعد", "type": "مدنية", "ayahs": 43}, {"id": 14, "name": "إبراهيم", "type": "مكية", "ayahs": 52},
+            {"id": 15, "name": "الحجر", "type": "مكية", "ayahs": 99}, {"id": 16, "name": "النحل", "type": "مكية", "ayahs": 128},
+            {"id": 17, "name": "الإسراء", "type": "مكية", "ayahs": 111}, {"id": 18, "name": "الكهف", "type": "مكية", "ayahs": 110},
+            {"id": 19, "name": "مريم", "type": "مكية", "ayahs": 98}, {"id": 20, "name": "طه", "type": "مكية", "ayahs": 135},
+            {"id": 21, "name": "الأنبياء", "type": "مكية", "ayahs": 112}, {"id": 22, "name": "الحج", "type": "مدنية", "ayahs": 78},
+            {"id": 23, "name": "المؤمنون", "type": "مكية", "ayahs": 118}, {"id": 24, "name": "النور", "type": "مدنية", "ayahs": 64},
+            {"id": 25, "name": "الفرقان", "type": "مكية", "ayahs": 77}, {"id": 26, "name": "الشعراء", "type": "مكية", "ayahs": 227},
+            {"id": 27, "name": "النمل", "type": "مكية", "ayahs": 93}, {"id": 28, "name": "القصص", "type": "مكية", "ayahs": 88},
+            {"id": 29, "name": "العنكبوت", "type": "مكية", "ayahs": 69}, {"id": 30, "name": "الروم", "type": "مكية", "ayahs": 60},
+            {"id": 31, "name": "لقمان", "type": "مكية", "ayahs": 34}, {"id": 32, "name": "السجدة", "type": "مكية", "ayahs": 30},
+            {"id": 33, "name": "الأحزاب", "type": "مدنية", "ayahs": 73}, {"id": 34, "name": "سبأ", "type": "مكية", "ayahs": 54},
+            {"id": 35, "name": "فاطر", "type": "مكية", "ayahs": 45}, {"id": 36, "name": "يس", "type": "مكية", "ayahs": 83},
+            {"id": 37, "name": "الصافات", "type": "مكية", "ayahs": 182}, {"id": 38, "name": "ص", "type": "مكية", "ayahs": 88},
+            {"id": 39, "name": "الزمر", "type": "مكية", "ayahs": 75}, {"id": 40, "name": "غافر", "type": "مكية", "ayahs": 85},
+            {"id": 41, "name": "فصلت", "type": "مكية", "ayahs": 54}, {"id": 42, "name": "الشورى", "type": "مكية", "ayahs": 53},
+            {"id": 43, "name": "الزخرف", "type": "مكية", "ayahs": 89}, {"id": 44, "name": "الدخان", "type": "مكية", "ayahs": 59},
+            {"id": 45, "name": "الجاثية", "type": "مكية", "ayahs": 37}, {"id": 46, "name": "الأحقاف", "type": "مكية", "ayahs": 35},
+            {"id": 47, "name": "محمد", "type": "مدنية", "ayahs": 38}, {"id": 48, "name": "الفتح", "type": "مدنية", "ayahs": 29},
+            {"id": 49, "name": "الحجرات", "type": "مدنية", "ayahs": 18}, {"id": 50, "name": "ق", "type": "مكية", "ayahs": 45},
+            {"id": 51, "name": "الذاريات", "type": "مكية", "ayahs": 60}, {"id": 52, "name": "الطور", "type": "مكية", "ayahs": 49},
+            {"id": 53, "name": "النجم", "type": "مكية", "ayahs": 62}, {"id": 54, "name": "القمر", "type": "مكية", "ayahs": 55},
+            {"id": 55, "name": "الرحمن", "type": "مدنية", "ayahs": 78}, {"id": 56, "name": "الواقعة", "type": "مكية", "ayahs": 96},
+            {"id": 57, "name": "الحديد", "type": "مدنية", "ayahs": 29}, {"id": 58, "name": "المجادلة", "type": "مدنية", "ayahs": 22},
+            {"id": 59, "name": "الحشر", "type": "مدنية", "ayahs": 24}, {"id": 60, "name": "الممتحنة", "type": "مدنية", "ayahs": 13},
+            {"id": 61, "name": "الصف", "type": "مدنية", "ayahs": 14}, {"id": 62, "name": "الجمعة", "type": "مدنية", "ayahs": 11},
+            {"id": 63, "name": "المنافقون", "type": "مدنية", "ayahs": 11}, {"id": 64, "name": "التغابن", "type": "مدنية", "ayahs": 18},
+            {"id": 65, "name": "الطلاق", "type": "مدنية", "ayahs": 12}, {"id": 66, "name": "التحريم", "type": "مدنية", "ayahs": 12},
+            {"id": 67, "name": "الملك", "type": "مكية", "ayahs": 30}, {"id": 68, "name": "القلم", "type": "مكية", "ayahs": 52},
+            {"id": 69, "name": "الحاقة", "type": "مكية", "ayahs": 52}, {"id": 70, "name": "المعارج", "type": "مكية", "ayahs": 44},
+            {"id": 71, "name": "نوح", "type": "مكية", "ayahs": 28}, {"id": 72, "name": "الجن", "type": "مكية", "ayahs": 28},
+            {"id": 73, "name": "المزمل", "type": "مكية", "ayahs": 20}, {"id": 74, "name": "المدثر", "type": "مكية", "ayahs": 56},
+            {"id": 75, "name": "القيامة", "type": "مكية", "ayahs": 40}, {"id": 76, "name": "الإنسان", "type": "مدنية", "ayahs": 31},
+            {"id": 77, "name": "المرسلات", "type": "مكية", "ayahs": 50}, {"id": 78, "name": "النبأ", "type": "مكية", "ayahs": 40},
+            {"id": 79, "name": "النازعات", "type": "مكية", "ayahs": 46}, {"id": 80, "name": "عبس", "type": "مكية", "ayahs": 42},
+            {"id": 81, "name": "التكوير", "type": "مكية", "ayahs": 29}, {"id": 82, "name": "الانفطار", "type": "مكية", "ayahs": 19},
+            {"id": 83, "name": "المطففين", "type": "مكية", "ayahs": 36}, {"id": 84, "name": "الانشقاق", "type": "مكية", "ayahs": 25},
+            {"id": 85, "name": "البروج", "type": "مكية", "ayahs": 22}, {"id": 86, "name": "الطارق", "type": "مكية", "ayahs": 17},
+            {"id": 87, "name": "الأعلى", "type": "مكية", "ayahs": 19}, {"id": 88, "name": "الغاشية", "type": "مكية", "ayahs": 26},
+            {"id": 89, "name": "الفجر", "type": "مكية", "ayahs": 30}, {"id": 90, "name": "البلد", "type": "مكية", "ayahs": 20},
+            {"id": 91, "name": "الشمس", "type": "مكية", "ayahs": 15}, {"id": 92, "name": "الليل", "type": "مكية", "ayahs": 21},
+            {"id": 93, "name": "الضحى", "type": "مكية", "ayahs": 11}, {"id": 94, "name": "الشرح", "type": "مكية", "ayahs": 8},
+            {"id": 95, "name": "التين", "type": "مكية", "ayahs": 8}, {"id": 96, "name": "العلق", "type": "مكية", "ayahs": 19},
+            {"id": 97, "name": "القدر", "type": "مكية", "ayahs": 5}, {"id": 98, "name": "البينة", "type": "مدنية", "ayahs": 8},
+            {"id": 99, "name": "الزلزلة", "type": "مدنية", "ayahs": 8}, {"id": 100, "name": "العاديات", "type": "مكية", "ayahs": 11},
+            {"id": 101, "name": "القارعة", "type": "مكية", "ayahs": 11}, {"id": 102, "name": "التكاثر", "type": "مكية", "ayahs": 8},
+            {"id": 103, "name": "العصر", "type": "مكية", "ayahs": 3}, {"id": 104, "name": "الهمزة", "type": "مكية", "ayahs": 9},
+            {"id": 105, "name": "الفيل", "type": "مكية", "ayahs": 5}, {"id": 106, "name": "قريش", "type": "مكية", "ayahs": 4},
+            {"id": 107, "name": "الماعون", "type": "مكية", "ayahs": 7}, {"id": 108, "name": "الكوثر", "type": "مكية", "ayahs": 3},
+            {"id": 109, "name": "الكافرون", "type": "مكية", "ayahs": 6}, {"id": 110, "name": "النصر", "type": "مدنية", "ayahs": 3},
+            {"id": 111, "name": "المسد", "type": "مكية", "ayahs": 5}, {"id": 112, "name": "الإخلاص", "type": "مكية", "ayahs": 4},
+            {"id": 113, "name": "الفلق", "type": "مكية", "ayahs": 5}, {"id": 114, "name": "الناس", "type": "مكية", "ayahs": 6}
+        ];
+
+        let readingSurahId = 0;
+        let downloadedSurahs = [];
+
+        window.onDownloadedSurahsReceived = function(b64) {
+            try {
+                const data = JSON.parse(window.decodeSafeData(b64));
+                downloadedSurahs = data;
+                renderSurahCards(QURAN_CHAPTERS);
+            } catch(e) {}
+        };
+
+        window.onLastRead = function(b64) {
+            try {
+                const data = JSON.parse(window.decodeSafeData(b64));
+                readingSurahId = data.surah;
+                renderSurahCards(QURAN_CHAPTERS);
+            } catch(e) {}
+        };
+
+        window.onload = function() {
+            renderSurahCards(QURAN_CHAPTERS);
+            const bridge = window.AndroidBridge || (window.parent && window.parent.AndroidBridge);
+            if(bridge) {
+                if(typeof bridge.getLastRead === 'function') bridge.getLastRead();
+                if(typeof bridge.getDownloadedSurahs === 'function') bridge.getDownloadedSurahs();
+            }
+        };
+
+        function startDownload(event, surahId, iconElement) {
+            event.stopPropagation();
+            iconElement.classList.add('downloading-act');
+            const bridge = window.AndroidBridge || (window.parent && window.parent.AndroidBridge);
+            if(bridge && typeof bridge.downloadSurah === 'function') {
+                const reciterId = localStorage.getItem('q_rec') || 'Maher_AlMuaiqly_64kbps';
+                bridge.downloadSurah(surahId, reciterId);
+                const sName = QURAN_CHAPTERS.find(s => s.id === surahId).name;
+                if(typeof bridge.showToast === 'function') bridge.showToast("بدء تحميل سورة " + sName + "...");
+            }
+            setTimeout(() => { iconElement.classList.remove('downloading-act'); }, 10000);
+        }
+
+        function deleteSurah(event, surahId) {
+            event.stopPropagation();
+            if(!confirm("هل تريد حذف هذه السورة من الجهاز؟")) return;
+            const bridge = window.AndroidBridge || (window.parent && window.parent.AndroidBridge);
+            if(bridge && typeof bridge.deleteSurah === 'function') {
+                bridge.deleteSurah(surahId);
+            }
+        }
+
+        function renderSurahCards(list) {
+            const container = document.getElementById('surah-list-container');
+            if (!container) return;
+            container.innerHTML = list.map(s => {
+                const isDownloaded = downloadedSurahs.includes(s.id);
+                return `
+                <div class="surah-card ${s.id === readingSurahId ? 'active-reading' : ''}" onclick="window.parent.loadPage('reading', {surah:${s.id}})">
+                    <div class="num-ornament-wrap">
+                        <div class="num-ornament-shape"></div>
+                        <div class="num-text">${window.toArDigits(s.id)}</div>
+                    </div>
+                    <div class="surah-details">
+                        <h3>${s.name}</h3>
+                        <div class="surah-meta">${s.type} • ${window.toArDigits(s.ayahs)} آية</div>
+                    </div>
+                    <span class="material-symbols-rounded download-icon ${isDownloaded ? 'downloaded' : ''}"
+                          onclick="${isDownloaded ? 'deleteSurah(event, ' + s.id + ')' : 'startDownload(event, ' + s.id + ', this)'}">
+                        ${isDownloaded ? 'delete' : 'cloud_download'}
+                    </span>
+                </div>
+            `;}).join('');
+        }
+
+        function filterSurahs() {
+            const query = document.getElementById('surahSearch').value.trim();
+            const filtered = query ? QURAN_CHAPTERS.filter(s => s.name.includes(query) || s.id.toString().includes(query)) : QURAN_CHAPTERS;
+            renderSurahCards(filtered);
+        }
+    </script>
+</body>
+</html>

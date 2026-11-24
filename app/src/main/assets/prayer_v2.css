@@ -1,0 +1,139 @@
+/*
+   تصميم شاشة مواقيت الصلاة V2 - المصحف الكوني
+   تم التغيير بالكامل لضمان تحديث الملفات وحل مشكلة النصوص
+*/
+
+:root {
+    --bg-color: #020611;
+    --card-color: #0D1D2F;
+    --gold-color: #E8C172;
+    --green-color: #00FF00;
+    --yellow-color: #FFD700;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Inter:wght@700;900&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+    background-color: var(--bg-color);
+    color: #FFFFFF;
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.screen-container { display: flex; flex-direction: column; height: 100vh; }
+
+/* الهيدر باستخدام SVG بدلاً من الخطوط لضمان الجودة وعدم ظهور نصوص */
+.app-header {
+    padding: calc(env(safe-area-inset-top) + 20px) 20px 15px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.btn-icon {
+    width: 44px; height: 44px;
+    border: 1px solid rgba(232, 193, 114, 0.3);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--gold-color);
+    cursor: pointer;
+}
+
+.header-title { color: var(--gold-color); font-size: 1.6rem; font-weight: 900; }
+
+.scroll-content { flex: 1; overflow-y: auto; padding: 10px 20px 50px; scrollbar-width: none; }
+.scroll-content::-webkit-scrollbar { display: none; }
+
+/* بطاقة العداد التنازلي */
+.hero-card {
+    background: linear-gradient(145deg, #0D1D2F 0%, #060F1A 100%);
+    border-radius: 30px; padding: 25px;
+    border: 1px solid rgba(232, 193, 114, 0.15);
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.hero-label { font-size: 1.2rem; margin-bottom: 5px; opacity: 0.9; }
+.timer-val { font-size: 3.2rem; font-weight: 900; color: var(--gold-color); font-family: 'Inter', sans-serif; }
+.hijri-val { color: var(--gold-color); font-weight: 700; font-size: 1.2rem; margin-top: 5px; }
+
+/* شبكة مواقيت الصلاة */
+.prayer-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 25px;
+}
+.prayer-item {
+    background: rgba(13, 29, 47, 0.5); border-radius: 18px;
+    padding: 15px 5px; display: flex; flex-direction: column; align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.prayer-item.active { border: 1.5px solid var(--gold-color); background: rgba(232, 193, 114, 0.08); }
+.prayer-label { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+.prayer-time { color: var(--gold-color); font-size: 1.15rem; font-weight: 900; font-family: 'Inter', sans-serif; }
+
+/* بطاقة البوصلة المحدثة */
+.compass-card {
+    background: rgba(13, 29, 47, 0.3); border-radius: 35px;
+    padding: 25px; border: 1px solid rgba(232, 193, 114, 0.1);
+    display: flex; flex-direction: column; align-items: center;
+}
+.compass-title { color: #8E9BAE; font-weight: 800; margin-bottom: 25px; font-size: 1.1rem; }
+
+.compass-dial {
+    width: 240px; height: 240px; position: relative;
+    border-radius: 50%;
+    background: radial-gradient(circle, #0D1D2F 30%, #020611 100%);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+}
+
+/* علامات التدريج */
+.dial-tick {
+    position: absolute; width: 2px; height: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    left: 50%; top: 6px; transform-origin: 50% 114px;
+}
+
+/* الكعبة المشرفة - تصميم CSS يدوي بالكامل لمنع ظهور أي نص إنجليزي */
+.kaaba-fixed {
+    position: absolute; top: 15px; left: 50%;
+    transform: translateX(-50%); z-index: 100;
+}
+.kaaba-box {
+    width: 42px; height: 42px; background: #000000;
+    border: 1.8px solid var(--gold-color); border-radius: 8px;
+    position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+}
+.kaaba-box::after {
+    content: ''; position: absolute; top: 10px; left: 0; right: 0;
+    height: 4.5px; background: var(--gold-color);
+}
+
+/* إبرة القبلة - تبدأ صفراء وتتحول للأخضر عند المحاذاة */
+.qibla-needle {
+    position: absolute; top: 50%; left: 50%;
+    width: 12px; height: 110px;
+    background: var(--yellow-color);
+    clip-path: polygon(50% 0%, 100% 100%, 50% 85%, 0% 100%);
+    transform: translate(-50%, -100%) rotate(0deg);
+    transform-origin: bottom center;
+    z-index: 10;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    transition: transform 0.1s linear, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* لون الحالة الصحيحة (Aligned) */
+.qibla-needle.aligned {
+    background: var(--green-color) !important;
+    box-shadow: 0 0 30px var(--green-color);
+}
+
+.degree-val {
+    color: var(--gold-color); font-size: 2.6rem; font-weight: 900;
+    margin-top: 25px; font-family: 'Inter', sans-serif;
+    transition: color 0.3s ease;
+}
+.degree-val.aligned { color: var(--green-color) !important; }

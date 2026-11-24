@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <!-- تم التحديث إلى MaterialComponents لضمان عمل الـ Toolbar والـ Cards دون انهيار -->
+    <style name="Base.Theme.AlQuranKarim" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/cosmic_dark</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="colorPrimary">@color/gold_glow</item>
+        <item name="colorSecondary">@color/accent_cyan</item>
+    </style>
+
+    <style name="Theme.AlQuranKarim" parent="Base.Theme.AlQuranKarim">
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
+    </style>
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/cosmic_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.AlQuranKarim</item>
+    </style>
+</resources>
