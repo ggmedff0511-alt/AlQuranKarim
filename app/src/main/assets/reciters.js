@@ -43,7 +43,23 @@ function displayReciters(reciters) {
     var container = document.getElementById('reciters-list-container');
     if (!container) return;
 
-    var famousKeywords = ["basit", "minshawi", "husary", "maher", "alafasy", "sudais", "shuraim", "dosari", "ajmi", "ajamy", "ghamdi", "qatami", "abbad", "abkar", "hudhaifi", "shatri", "juhani", "thubaiti", "jaber", "ayyub", "baleela", "rifai"];
+    /**
+     * تعديل جراحي: تصفية قائمة القراء للإبقاء فقط على المشايخ المحددين من قبل المستخدم وحذف البقية.
+     * القائمة المختارة: عبدالباسط، الحصري، المعيقلي، العفاسي، السديس، فارس عباد، هاني الرفاعي، محمد جبريل، محمد أيوب، الطبلاوي، عبدالله بصفر، سعود الشريم.
+     */
+    var allowedKeywords = [
+        "عبدالباسط", "الحصري", "المعيقلي", "المعقلي", "العفاسي", "السديس",
+        "فارس عباد", "هاني الرفاعي", "محمد جبريل", "محمد أيوب", "محمد ايوب",
+        "الطبلاوي", "عبدالله بصفر", "سعود الشريم", "سعودالشريم"
+    ];
+
+    reciters = reciters.filter(function(reciter) {
+        return allowedKeywords.some(function(key) {
+            return reciter.name.includes(key);
+        });
+    });
+
+    var famousKeywords = ["basit", "husary", "maher", "alafasy", "sudais", "shuraim", "abbad", "rifai", "jibreel", "ayyub", "tablawi", "basfar"];
 
     reciters.sort(function(a, b) {
         var idxA = famousKeywords.findIndex(k => a.id.toLowerCase().includes(k));
