@@ -48,12 +48,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import android.icu.util.ULocale;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private WebView webView;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accelerometer, magnetometer;
     private final float[] lastAccelerometer = new float[3], lastMagnetometer = new float[3];
     private boolean lastAccelerometerSet = false, lastMagnetometerSet = false;
-    private float qiblaDegree = 0, currentAzimuth = 0, currentNeedle = 0;
+    private float qiblaDegree = 0;
 
     private final BroadcastReceiver audioReceiver = new BroadcastReceiver() {
         @Override
@@ -78,8 +78,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     int surah = intent.getIntExtra("surah", 1), ayah = intent.getIntExtra("ayah", 1);
                     boolean repeat = intent.getBooleanExtra("repeat", false);
                     String reciter = intent.getStringExtra("reciterName");
-                    int progress = intent.getIntExtra("progress", 0);
-                    runJS(String.format(Locale.US, "if(window.onAudioUpdate) onAudioUpdate('%s',%d,%d,%b,'%s',%d)", status, surah, ayah, repeat, reciter, progress));
+                    float progress = intent.getFloatExtra("progress", 0);
+                    runJS(String.format(Locale.US, "if(window.onAudioUpdate) onAudioUpdate('%s',%d,%d,%b,'%s',%f)", status, surah, ayah, repeat, reciter, progress));
                 } catch (Exception e) {
                     Log.e("AudioReceiver", "Error", e);
                 }
@@ -136,13 +136,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         checkNotificationPermission();
         hadithRepository.initializeDefaultBooks();
         checkExactAlarmPermission();
-        checkBatteryOptimizations(); // جراحة: فحص تحسين البطارية لضمان عمل الأذان في الخلفية
+        checkBatteryOptimizations();
         PrayerScheduler.scheduleNextPrayer(this);
     }
 
-    /**
-     * جراحة: طلب استثناء التطبيق من تحسين البطارية لضمان أن الأذان يعمل دائماً حتى لو كان التطبيق مغلقاً.
-     */
     private void checkBatteryOptimizations() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
@@ -225,9 +222,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public boolean isBookDownloaded(String bookId) { return hadithRepository.isBookDownloaded(bookId); }
 
         @JavascriptInterface
-        public boolean isBookDownloading(String bookId) { return hadithRepository.isBookDownloading(bookId); }
-
-        @JavascriptInterface
         public int getTotalDownloadedHadiths() { return hadithRepository.getTotalDownloadedHadiths(); }
 
         @JavascriptInterface
@@ -274,8 +268,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @JavascriptInterface
         public void playSurah(int surahNum, String reciter) {
             Intent intent = new Intent(MainActivity.this, AudioService.class);
-            intent.setAction("PLAY_SURAH");
+            intent.setAction(AudioService.ACTION_PLAY);
             intent.putExtra("surah", surahNum);
+            intent.putExtra("ayah", 1);
             intent.putExtra("reciter", reciter);
             ContextCompat.startForegroundService(MainActivity.this, intent);
         }
@@ -283,26 +278,246 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @JavascriptInterface
         public void toggleAudio() {
             Intent intent = new Intent(MainActivity.this, AudioService.class);
-            intent.setAction("TOGGLE_PLAY");
+            intent.setAction(AudioService.ACTION_TOGGLE);
             startService(intent);
         }
 
         @JavascriptInterface
         public void stopAudio() {
             Intent intent = new Intent(MainActivity.this, AudioService.class);
-            intent.setAction("STOP_AUDIO");
+            intent.setAction(AudioService.ACTION_STOP);
             startService(intent);
         }
 
         @JavascriptInterface
         public void setRepeat(boolean repeat) {
             Intent intent = new Intent(MainActivity.this, AudioService.class);
-            intent.setAction("SET_REPEAT");
-            intent.putExtra("repeat", repeat);
+            intent.setAction(AudioService.ACTION_SET_REPEAT);
+            intent.putExtra("enabled", repeat);
             startService(intent);
+        }
+
+        @JavascriptInterface
+        public void downloadSurah(int surahId, String reciterId) {
+            quranDataManager.downloadSurah(surahId, reciterId);
+        }
+
+        @JavascriptInterface
+        public void deleteSurah(int surahId) {
+            quranDataManager.deleteSurah(surahId);
+        }
+
+        @JavascriptInterface
+        public void getDownloadedSurahs() {
+            executorService.execute(() -> {
+                List<Integer> ids = quranDataManager.getDownloadedSurahIds();
+                String idsJson = new JSONArray(ids).toString();
+                String idsB64 = Base64.encodeToString(idsJson.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                runJS("if(window.onDownloadedSurahsReceived) onDownloadedSurahsReceived('" + idsB64 + "')");
+            });
+        }
+
+        @JavascriptInterface
+        public void getReciters(String callback) {
+            executorService.execute(() -> {
+                try {
+                    JSONArray arr = new JSONArray();
+                    String[] files = getAssets().list("reciters");
+                    if (files != null) {
+                        for (String f : files) {
+                            if (!f.endsWith(".json")) continue;
+                            try (InputStream is = getAssets().open("reciters/" + f);
+                                 BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                                StringBuilder sb = new StringBuilder();
+                                String line;
+                                while ((line = reader.readLine()) != null) sb.append(line);
+                                arr.put(new JSONObject(sb.toString()));
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                    String b64 = Base64.encodeToString(arr.toString().getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                    runJS("if(window." + callback + ") " + callback + "('" + b64 + "')");
+                } catch (Exception e) { Log.e("WebBridge", "getReciters error", e); }
+            });
+        }
+
+        @JavascriptInterface
+        public void setReciter(String id, String name, String type, String server) {
+            prefs.edit()
+                .putString("q_rec", id)
+                .putString("q_rec_name", name)
+                .putString("lastReciter", id)
+                .putString("lastReciterName", name)
+                .putString("reciter_type_" + id, type)
+                .putString("reciter_server_" + id, server)
+                .apply();
+            
+            Intent intent = new Intent(MainActivity.this, AudioService.class);
+            intent.setAction(AudioService.ACTION_UPDATE_RECITER);
+            intent.putExtra("reciter", id);
+            intent.putExtra("reciterName", name);
+            intent.putExtra("reciterType", type);
+            intent.putExtra("reciterServer", server);
+            startService(intent);
+        }
+
+        @JavascriptInterface
+        public void getLastRead() {
+            executorService.execute(() -> {
+                int surah = prefs.getInt("last_surah", 1);
+                int ayah = prefs.getInt("last_ayah", 1);
+                try {
+                    JSONObject obj = new JSONObject();
+                    obj.put("surah", surah);
+                    obj.put("ayah", ayah);
+                    String b64 = Base64.encodeToString(obj.toString().getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                    runJS("if(window.onLastRead) onLastRead('" + b64 + "')");
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface
+        public void fetchQuranData(String url, String callback) {
+            quranDataManager.fetchQuranData(url, callback);
+        }
+
+        @JavascriptInterface
+        public void fetchTafsir(int surah, int ayah, String callback) {
+            quranDataManager.fetchTafsir(surah, ayah, callback);
+        }
+
+        @JavascriptInterface
+        public void playAyah(int surah, int ayah) {
+            Intent intent = new Intent(MainActivity.this, AudioService.class);
+            intent.setAction(AudioService.ACTION_PLAY);
+            intent.putExtra("surah", surah);
+            intent.putExtra("ayah", ayah);
+            intent.putExtra("reciter", prefs.getString("q_rec", "Maher_AlMuaiqly_64kbps"));
+            ContextCompat.startForegroundService(MainActivity.this, intent);
+            prefs.edit().putInt("last_surah", surah).putInt("last_ayah", ayah).apply();
+        }
+
+        @JavascriptInterface
+        public void togglePlay() {
+            toggleAudio();
+        }
+
+        @JavascriptInterface
+        public void nextAyah() {
+            Intent intent = new Intent(MainActivity.this, AudioService.class);
+            intent.setAction(AudioService.ACTION_NEXT);
+            startService(intent);
+        }
+
+        @JavascriptInterface
+        public void prevAyah() {
+            Intent intent = new Intent(MainActivity.this, AudioService.class);
+            intent.setAction(AudioService.ACTION_PREV);
+            startService(intent);
+        }
+
+        @JavascriptInterface
+        public void toggleRepeat() {
+            boolean current = prefs.getBoolean("audio_repeat", false);
+            setRepeat(!current);
+            prefs.edit().putBoolean("audio_repeat", !current).apply();
+        }
+
+        @JavascriptInterface
+        public void requestAudioStatus() {
+            Intent intent = new Intent(MainActivity.this, AudioService.class);
+            intent.setAction(AudioService.ACTION_REQUEST_STATUS);
+            startService(intent);
+        }
+
+        @JavascriptInterface
+        public void addBookmark(int surah, int ayah) {
+            Set<String> bookmarks = new HashSet<>(prefs.getStringSet("quran_bookmarks", new HashSet<>()));
+            bookmarks.add(surah + ":" + ayah);
+            prefs.edit().putStringSet("quran_bookmarks", bookmarks).apply();
+            showToast("تمت الإضافة للمفضلة");
+        }
+
+        @JavascriptInterface
+        public void removeBookmark(int surah, int ayah) {
+            Set<String> bookmarks = new HashSet<>(prefs.getStringSet("quran_bookmarks", new HashSet<>()));
+            bookmarks.remove(surah + ":" + ayah);
+            prefs.edit().putStringSet("quran_bookmarks", bookmarks).apply();
+            showToast("تم الحذف من المفضلة");
+        }
+
+        @JavascriptInterface
+        public void setSleepTimer(int minutes) {
+            Intent intent = new Intent(MainActivity.this, AudioService.class);
+            intent.setAction(AudioService.ACTION_SET_SLEEP_TIMER);
+            intent.putExtra("minutes", minutes);
+            startService(intent);
+            if (minutes > 0) showToast("سيتم إيقاف التلاوة بعد " + minutes + " دقيقة");
+        }
+
+        @JavascriptInterface
+        public void vibrate(int duration) {
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            if (v != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    v.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    v.vibrate(duration);
+                }
+            }
+        }
+
+        @JavascriptInterface
+        public void playSalatSoundSample(String soundId) {
+            try {
+                int resId = getResources().getIdentifier(soundId, "raw", getPackageName());
+                if (resId != 0) {
+                    MediaPlayer mp = MediaPlayer.create(MainActivity.this, resId);
+                    mp.setOnCompletionListener(MediaPlayer::release);
+                    mp.start();
+                }
+            } catch (Exception e) { Log.e("SalatSound", "Error", e); }
+        }
+
+        @JavascriptInterface
+        public void onSettingChanged(String key, String value) {
+            prefs.edit().putString(key, value).apply();
+            if (key.equals("salat_nabi_interval") || key.equals("salat_nabi_notify")) {
+                SalatReminderReceiver.scheduleReminder(MainActivity.this, getSalatInterval());
+            }
+        }
+        
+        @JavascriptInterface
+        public void onSettingChanged(String key, boolean value) {
+            prefs.edit().putBoolean(key, value).apply();
+            if (key.equals("salat_nabi_notify")) {
+                if (value) SalatReminderReceiver.scheduleReminder(MainActivity.this, getSalatInterval());
+                else SalatReminderReceiver.cancelReminder(MainActivity.this);
+            }
+        }
+
+        private int getSalatInterval() {
+            try {
+                return prefs.getInt("salat_nabi_interval", 15);
+            } catch (Exception e) {
+                try {
+                    return Integer.parseInt(prefs.getString("salat_nabi_interval", "15"));
+                } catch (Exception ignored) {
+                    return 15;
+                }
+            }
+        }
+
+        @JavascriptInterface
+        public void shareText(String text) {
+            Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+            sendIntent.setType("text/plain");
+            startActivity(Intent.createChooser(sendIntent, null));
         }
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override
     protected void onResume() {
         super.onResume();
@@ -337,18 +552,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float[] R = new float[9], orientation = new float[3];
             if (SensorManager.getRotationMatrix(R, null, lastAccelerometer, lastMagnetometer)) {
                 SensorManager.getOrientation(R, orientation);
-                float azimuthInRadians = orientation[0];
-                float azimuthInDegrees = (float) Math.toDegrees(azimuthInRadians);
-                
-                LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                try {
-                    Location loc = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                    if (loc != null) {
-                        GeomagneticField geoField = new GeomagneticField((float) loc.getLatitude(), (float) loc.getLongitude(), (float) loc.getAltitude(), System.currentTimeMillis());
-                        azimuthInDegrees += geoField.getDeclination();
-                    }
-                } catch (SecurityException ignored) {}
-
+                float azimuthInDegrees = (float) Math.toDegrees(orientation[0]);
                 azimuthInDegrees = (azimuthInDegrees + 360) % 360;
                 float needleRotation = qiblaDegree - azimuthInDegrees;
                 runJS(String.format(Locale.US, "if(window.onQiblaUpdate) onQiblaUpdate(%.2f, %.2f)", azimuthInDegrees, needleRotation));
@@ -362,10 +566,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onDestroy() {
         executorService.shutdown();
-        if (splashPlayer != null) {
-            splashPlayer.release();
-            splashPlayer = null;
-        }
+        if (splashPlayer != null) { splashPlayer.release(); splashPlayer = null; }
         super.onDestroy();
     }
 }

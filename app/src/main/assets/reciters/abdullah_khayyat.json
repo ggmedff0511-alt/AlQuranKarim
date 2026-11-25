@@ -1,7 +1,8 @@
 {
-    "id": "Abdullah_Khayat_128kbps",
+    "id": "Abdullah_Khayat_64kbps",
     "name": "الشيخ عبدالله خياط",
     "sub": "رواية حفص عن عاصم (آيات)",
     "type": "ayah",
-    "server": ""
+    "server": "",
+    "comment": "تعديل جراحي: توحيد المُعرف وتنظيف السيرفر ليعمل بنظام المحاولات الموحد"
 }

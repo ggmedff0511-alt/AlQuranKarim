@@ -16,7 +16,8 @@
         }
         .downloading-act { animation: pulse-gold 1s infinite; }
         #surah-list-container { min-height: 200px; }
-        .download-icon.downloaded { color: #ff5252; } /* لون أيقونة الحذف */
+        /* جراحة: لون أيقونة الحذف المكتمل باللون الأحمر الفاتح لتمييزه */
+        .download-icon.downloaded { color: #ff5252 !important; opacity: 1 !important; }
     </style>
 </head>
 <body>
@@ -112,11 +113,14 @@
 
         let readingSurahId = 0;
         let downloadedSurahs = [];
+        let downloadingIds = []; // جراحة: تتبع السور الجاري تحميلها
 
         window.onDownloadedSurahsReceived = function(b64) {
             try {
                 const data = JSON.parse(window.decodeSafeData(b64));
                 downloadedSurahs = data;
+                // جراحة: تحديث حالة التحميل الجاري
+                downloadingIds = downloadingIds.filter(id => !downloadedSurahs.includes(id));
                 renderSurahCards(QURAN_CHAPTERS);
             } catch(e) {}
         };
@@ -140,7 +144,11 @@
 
         function startDownload(event, surahId, iconElement) {
             event.stopPropagation();
+            if (downloadingIds.includes(surahId)) return;
+
+            downloadingIds.push(surahId);
             iconElement.classList.add('downloading-act');
+
             const bridge = window.AndroidBridge || (window.parent && window.parent.AndroidBridge);
             if(bridge && typeof bridge.downloadSurah === 'function') {
                 const reciterId = localStorage.getItem('q_rec') || 'Maher_AlMuaiqly_64kbps';
@@ -148,7 +156,6 @@
                 const sName = QURAN_CHAPTERS.find(s => s.id === surahId).name;
                 if(typeof bridge.showToast === 'function') bridge.showToast("بدء تحميل سورة " + sName + "...");
             }
-            setTimeout(() => { iconElement.classList.remove('downloading-act'); }, 10000);
         }
 
         function deleteSurah(event, surahId) {
@@ -165,6 +172,7 @@
             if (!container) return;
             container.innerHTML = list.map(s => {
                 const isDownloaded = downloadedSurahs.includes(s.id);
+                const isDownloading = downloadingIds.includes(s.id);
                 return `
                 <div class="surah-card ${s.id === readingSurahId ? 'active-reading' : ''}" onclick="window.parent.loadPage('reading', {surah:${s.id}})">
                     <div class="num-ornament-wrap">
@@ -175,9 +183,9 @@
                         <h3>${s.name}</h3>
                         <div class="surah-meta">${s.type} • ${window.toArDigits(s.ayahs)} آية</div>
                     </div>
-                    <span class="material-symbols-rounded download-icon ${isDownloaded ? 'downloaded' : ''}"
+                    <span class="material-symbols-rounded download-icon ${isDownloaded ? 'downloaded' : ''} ${isDownloading ? 'downloading-act' : ''}"
                           onclick="${isDownloaded ? 'deleteSurah(event, ' + s.id + ')' : 'startDownload(event, ' + s.id + ', this)'}">
-                        ${isDownloaded ? 'delete' : 'cloud_download'}
+                        ${isDownloaded ? 'delete' : (isDownloading ? 'sync' : 'cloud_download')}
                     </span>
                 </div>
             `;}).join('');

@@ -26,7 +26,7 @@ public class AzanActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (tvClock != null) {
-                // تعليق جراحي: تغيير نظام الساعة إلى 12 ساعة (hh:mm:ss a) بدلاً من 24 ساعة
+                // تعليق جراحي: تحديث الساعة بنظام 12 ساعة مع الثواني لضمان حيوية الشاشة
                 tvClock.setText(new SimpleDateFormat("hh:mm:ss a", new Locale("ar")).format(new Date()));
             }
             handler.postDelayed(this, 1000);
@@ -37,7 +37,9 @@ public class AzanActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // تعليق جراحي: السماح للنشاط بالظهور فوق قفل الشاشة وتشغيل الشاشة تلقائياً
+        // تعليق جراحي: ضمان بقاء الشاشة مضاءة دائماً أثناء الأذان والسماح بالظهور فوق القفل لضمان تنبيه المستخدم
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true);
             setTurnScreenOn(true);
@@ -46,13 +48,12 @@ public class AzanActivity extends AppCompatActivity {
         } else {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                     | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                    | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                     | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
 
         setContentView(R.layout.activity_azan);
 
-        tvClock = findViewById(R.id.tvAzanMessage); // سنستخدم هذا الحقل للساعة
+        tvClock = findViewById(R.id.tvAzanMessage); // استخدام حقل الرسالة لعرض الساعة الحية
         String prayerName = getIntent().getStringExtra("prayerName");
         TextView tvPrayerName = findViewById(R.id.tvAzanPrayerName);
         if (tvPrayerName != null) tvPrayerName.setText(prayerName != null ? prayerName : "الصلاة");
@@ -76,6 +77,6 @@ public class AzanActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // منع العودة لإجبار المستخدم على التفاعل مع زر "إيقاف الأذان"
+        // تعليق جراحي: منع العودة بالزر الخلفي لإجبار المستخدم على الضغط على "إيقاف الأذان" لضمان استقرار الخدمة
     }
 }

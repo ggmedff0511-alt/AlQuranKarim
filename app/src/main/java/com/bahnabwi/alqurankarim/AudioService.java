@@ -24,12 +24,13 @@ import java.io.File;
 import java.util.Locale;
 
 /**
- * AudioService: النسخة الاحترافية لضمان عمل كافة المشايخ حقيقياً
- * تم التحديث لاستخدام HTTPS ودعم السيرفرات المباشرة والمحلية بكفاءة عالية.
+ * AudioService: النسخة الحادية عشر (المحرك الشامل الذكي)
+ * تم التحديث لحل مشكلة توقف بعض المشايخ عبر نظام المحاولات المتعددة (Multi-Try)
+ * يضمن هذا الإصدار عمل كافة القراء (مثل العجمي والشريم وعباد) دون التأثير على القراء الستة المستقرين.
  */
 public class AudioService extends Service implements AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "AudioService";
-    private static final String CHANNEL_ID = "QuranAudioChannel_v2";
+    private static final String CHANNEL_ID = "QuranAudioChannel_v11";
     public static final String UI_UPDATE_BROADCAST = "com.bahnabwi.alqurankarim.UI_UPDATE";
     public static final String ACTION_PLAY = "com.bahnabwi.alqurankarim.PLAY";
     public static final String ACTION_TOGGLE = "com.bahnabwi.alqurankarim.TOGGLE";
@@ -47,13 +48,16 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
     private SharedPreferences prefs;
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     
+    // نظام المحاولات الممتد لضمان التوافق مع كافة هيكليات السيرفرات العالمية
+    private int currentRetryLevel = 0;
+    
     private final Runnable progressRunnable = new Runnable() {
         @Override
         public void run() {
             if (mPlayer != null && mPlayer.isPlaying()) {
                 if ("surah".equals(currentReciterType)) estimateAyahFromPosition();
                 else notifyUI("PLAYING");
-                progressHandler.postDelayed(this, 300); 
+                progressHandler.postDelayed(this, 500); 
             }
         }
     };
@@ -61,39 +65,49 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
     private String currentReciter = "Maher_AlMuaiqly_64kbps", currentReciterName = "ماهر المعيقلي", currentReciterType = "ayah", currentReciterServer = "";
     private int currentSurah = 1, currentAyah = 1;
     private static final int[] AYAH_COUNTS = {0, 7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88, 75, 85, 54, 53, 89, 59, 37, 35, 38, 29, 18, 45, 60, 49, 62, 55, 78, 96, 29, 22, 24, 13, 14, 11, 11, 18, 12, 12, 30, 52, 52, 44, 28, 28, 20, 56, 40, 31, 50, 40, 46, 42, 29, 19, 36, 25, 22, 17, 19, 26, 30, 20, 15, 21, 11, 8, 8, 19, 5, 8, 8, 11, 11, 8, 3, 9, 5, 4, 7, 3, 6, 3, 5, 4, 5, 6};
+    private static final String[] SURAH_NAMES = {"", "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف", "الأنفال", "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر", "النحل", "الإسراء", "الكهف", "مريم", "طه", "الأنبياء", "الحج", "المؤمنون", "النور", "الفرقان", "الشعراء", "النمل", "القصص", "العنكبوت", "الروم", "لقمان", "السجدة", "الأحزاب", "سبأ", "فاطر", "يس", "الصافات", "ص", "الزمر", "غافر", "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية", "الأحقاف", "محمد", "الفتح", "الحجرات", "ق", "الذاريات", "الطور", "النجم", "القمر", "الرحمن", "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة", "الصف", "الجمعة", "المنافقون", "التغابن", "الطلاق", "التحريم", "الملك", "القلم", "الحاقة", "المعارج", "نوح", "الجن", "المزمل", "المدثر", "القيامة", "الإنسان", "المرسلات", "النبأ", "النازعات", "عبس", "التكوير", "الانفطار", "المطففين", "الانشقاق", "البروج", "الطارق", "الأعلى", "الغاشية", "الفجر", "البلد", "الشمس", "الليل", "الضحى", "الشرح", "التين", "العلق", "القدر", "البينة", "الزلزلة", "العاديات", "القارعة", "التكاثر", "العصر", "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر", "المسد", "الإخلاص", "الفلق", "الناس"};
 
     @Override
     public void onCreate() {
         super.onCreate();
         prefs = getSharedPreferences("quran_prefs", MODE_PRIVATE);
+        loadReciterFromPrefs();
+        currentSurah = prefs.getInt("last_surah", 1);
+        currentAyah = prefs.getInt("last_ayah", 1);
         isRepeatEnabled = prefs.getBoolean("audio_repeat", false);
-        currentSurah = prefs.getInt("lastSurah", 1);
-        currentAyah = prefs.getInt("lastAyah", 1);
-        currentReciter = prefs.getString("lastReciter", "Maher_AlMuaiqly_64kbps");
-        currentReciterName = prefs.getString("lastReciterName", "ماهر المعيقلي");
-        currentReciterType = prefs.getString("reciter_type_" + currentReciter, "ayah");
-        currentReciterServer = prefs.getString("reciter_server_" + currentReciter, "");
-
         createNotificationChannel();
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-        if (pm != null) {
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AlQuranKarim:AudioWakeLock");
-        }
+        if (pm != null) wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AlQuranKarim:AudioWakeLock");
+    }
+
+    private void loadReciterFromPrefs() {
+        currentReciter = prefs.getString("q_rec", "Maher_AlMuaiqly_64kbps");
+        currentReciterName = prefs.getString("q_rec_name", "ماهر المعيقلي");
+        currentReciterType = prefs.getString("reciter_type_" + currentReciter, "ayah");
+        currentReciterServer = prefs.getString("reciter_server_" + currentReciter, "");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
-            switch (intent.getAction()) {
+            String action = intent.getAction();
+            switch (action) {
                 case ACTION_PLAY: 
                     currentSurah = intent.getIntExtra("surah", currentSurah);
                     currentAyah = intent.getIntExtra("ayah", currentAyah);
-                    prefs.edit().putInt("lastSurah", currentSurah).putInt("lastAyah", currentAyah).apply();
-                    playCurrent(); break;
+                    if (intent.hasExtra("reciter")) {
+                        currentReciter = intent.getStringExtra("reciter");
+                        currentReciterName = intent.getStringExtra("reciterName");
+                        currentReciterType = prefs.getString("reciter_type_" + currentReciter, "ayah");
+                        currentReciterServer = prefs.getString("reciter_server_" + currentReciter, "");
+                    }
+                    currentRetryLevel = 0;
+                    saveLastRead();
+                    playCurrent(); 
+                    break;
                 case ACTION_TOGGLE: 
-                    if (mPlayer != null) {
-                        if (mPlayer.isPlaying()) pauseAudio(); else resumeAudio();
-                    } else { playCurrent(); }
+                    if (mPlayer != null) { if (mPlayer.isPlaying()) pauseAudio(); else resumeAudio(); } 
+                    else { playCurrent(); }
                     break;
                 case ACTION_NEXT: switchNext(); break;
                 case ACTION_PREV: playPrev(); break;
@@ -104,10 +118,12 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
                     currentReciterName = intent.getStringExtra("reciterName");
                     currentReciterType = intent.getStringExtra("reciterType");
                     currentReciterServer = intent.getStringExtra("reciterServer");
+                    currentRetryLevel = 0;
                     if (mPlayer != null && mPlayer.isPlaying()) playCurrent();
                     break;
                 case ACTION_SET_REPEAT:
                     isRepeatEnabled = intent.getBooleanExtra("enabled", isRepeatEnabled);
+                    prefs.edit().putBoolean("audio_repeat", isRepeatEnabled).apply();
                     break;
                 case ACTION_SET_SLEEP_TIMER:
                     int m = intent.getIntExtra("minutes", 0);
@@ -116,6 +132,10 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
             }
         }
         return START_STICKY;
+    }
+
+    private void saveLastRead() {
+        prefs.edit().putInt("last_surah", currentSurah).putInt("last_ayah", currentAyah).apply();
     }
 
     private void playCurrent() {
@@ -128,57 +148,86 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build());
             
-            String url;
-            File localFile = getLocalAudioFile();
+            String url = buildSmartUrl();
+            Log.d(TAG, "Attempting Play Level " + currentRetryLevel + ": " + url);
             
-            // تعليق جراحي: الأولوية للملف المحلي لضمان العمل بدون نت وسرعة الاستجابة
-            if (localFile != null && localFile.exists() && localFile.length() > 5000) {
-                url = localFile.getAbsolutePath();
-                Log.d(TAG, "Playing local file: " + url);
-            } else if (currentReciterServer != null && !currentReciterServer.isEmpty()) {
-                String fileName = "ayah".equals(currentReciterType) ? 
-                    String.format(Locale.US, "%03d%03d.mp3", currentSurah, currentAyah) :
-                    String.format(Locale.US, "%03d.mp3", currentSurah);
-                // تأكيد استخدام HTTPS وتصحيح الرابط
-                url = currentReciterServer.replace("http://", "https://");
-                url = url + (url.endsWith("/") ? "" : "/") + fileName;
-            } else {
-                // استخدام السيرفر العالمي EveryAyah مع دعم HTTPS
-                url = String.format(Locale.US, "https://everyayah.com/data/%s/%03d%03d.mp3", currentReciter, currentSurah, currentAyah);
-            }
-
             mPlayer.setDataSource(url);
-            mPlayer.setOnPreparedListener(mp -> {
-                if ("surah".equals(currentReciterType) && currentAyah > 1) {
-                    int pos = (int)(((float)(currentAyah-1)/AYAH_COUNTS[currentSurah]) * mp.getDuration());
-                    mp.seekTo(pos);
-                }
-                mp.start();
-                if (wakeLock != null && !wakeLock.isHeld()) wakeLock.acquire(3600000L);
-                notifyUI("PLAYING");
-                progressHandler.post(progressRunnable);
-                showNotification(true);
-            });
-            mPlayer.setOnCompletionListener(mp -> {
-                if (isRepeatEnabled) playCurrent();
-                else switchNext();
-            });
-            mPlayer.setOnErrorListener((mp, what, extra) -> {
-                Log.e(TAG, "Media Error for " + currentReciter + ": " + what + " / " + extra);
-                // في حال فشل السيرفر الخاص، نحاول السيرفر العالمي كخيار احتياطي أخير
-                if (currentReciterServer != null && !currentReciterServer.isEmpty()) {
-                    currentReciterServer = ""; // تصفير السيرفر مؤقتاً للمحاولة التالية
-                    playCurrent();
-                } else {
-                    switchNext();
-                }
-                return true;
-            });
+            setupPlayerListeners(url);
             mPlayer.prepareAsync();
         } catch (Exception e) { 
-            Log.e(TAG, "Critical Play error", e);
-            switchNext(); 
+            Log.e(TAG, "DataSource error", e);
+            handleRetry();
         }
+    }
+
+    /**
+     * جراحة: نظام المحاولات الذكي المطور (Hybrid Retry Engine)
+     * يقوم بتجربة كافة احتمالات الروابط (مع/بدون _64kbps) و (HTTPS/HTTP) و (Mirrors)
+     * لضمان عمل كافة القراء المطلوبين بشكل آلي تماماً.
+     */
+    private String buildSmartUrl() {
+        File localFile = getLocalAudioFile();
+        if (localFile != null && localFile.exists() && localFile.length() > 5000) return localFile.getAbsolutePath();
+
+        String fileName = "ayah".equals(currentReciterType) ? 
+            String.format(Locale.US, "%03d%03d.mp3", currentSurah, currentAyah) :
+            String.format(Locale.US, "%03d.mp3", currentSurah);
+
+        // تبديل المُعرف تلقائياً في المستويات الفردية لتجربة الصيغة البديلة
+        String reciterId = currentReciter;
+        if (currentRetryLevel % 2 != 0) {
+            if (reciterId.endsWith("_64kbps")) reciterId = reciterId.replace("_64kbps", "");
+            else reciterId = reciterId + "_64kbps";
+        }
+
+        // إذا كان هناك سيرفر يدوي في الـ JSON كمحاولة أولى
+        if (currentRetryLevel == 0 && currentReciterServer != null && !currentReciterServer.isEmpty()) {
+            String base = currentReciterServer.endsWith("/") ? currentReciterServer : currentReciterServer + "/";
+            return base + fileName;
+        }
+
+        // توزيع المحاولات على البروتوكولات والسيرفرات العالمية
+        int serverStep = currentRetryLevel / 2;
+        switch (serverStep) {
+            case 0: return "https://everyayah.com/data/" + reciterId + "/" + fileName;
+            case 1: return "http://everyayah.com/data/" + reciterId + "/" + fileName;
+            case 2: return "https://www.everyayah.com/data/" + reciterId + "/" + fileName;
+            case 3: return "http://www.everyayah.com/data/" + reciterId + "/" + fileName;
+            default: return "http://mirrors.quranicaudio.com/everyayah/" + reciterId + "/" + fileName;
+        }
+    }
+
+    private void handleRetry() {
+        if (currentRetryLevel < 9) { // تجربة 10 توليفات مختلفة قبل الاستسلام
+            currentRetryLevel++;
+            new Handler(Looper.getMainLooper()).postDelayed(this::playCurrent, 400);
+        } else {
+            Log.e(TAG, "All 10 combinations failed for " + currentReciter);
+            switchNext();
+        }
+    }
+
+    private void setupPlayerListeners(final String currentUrl) {
+        mPlayer.setOnPreparedListener(mp -> {
+            if ("surah".equals(currentReciterType) && currentAyah > 1) {
+                int count = AYAH_COUNTS[currentSurah];
+                int pos = (int)(((float)(currentAyah-1)/count) * mp.getDuration());
+                mp.seekTo(pos);
+            }
+            mp.start();
+            if (wakeLock != null && !wakeLock.isHeld()) wakeLock.acquire(3600000L);
+            notifyUI("PLAYING");
+            progressHandler.post(progressRunnable);
+            showNotification(true);
+        });
+        mPlayer.setOnCompletionListener(mp -> {
+            if (isRepeatEnabled) playCurrent(); else switchNext();
+        });
+        mPlayer.setOnErrorListener((mp, what, extra) -> {
+            Log.w(TAG, "Player Error at level " + currentRetryLevel + ", retrying...");
+            handleRetry();
+            return true;
+        });
     }
 
     private File getLocalAudioFile() {
@@ -195,10 +244,7 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
         int count = AYAH_COUNTS[currentSurah];
         int estimated = (int)(((float)mPlayer.getCurrentPosition()/mPlayer.getDuration()) * count) + 1;
         if (estimated > count) estimated = count;
-        if (estimated != currentAyah) {
-            currentAyah = estimated;
-            prefs.edit().putInt("lastAyah", currentAyah).apply();
-        }
+        if (estimated != currentAyah) { currentAyah = estimated; saveLastRead(); }
         notifyUI("PLAYING");
     }
 
@@ -206,37 +252,25 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
         if ("surah".equals(currentReciterType)) { currentSurah++; currentAyah = 1; }
         else { currentAyah++; if (currentAyah > AYAH_COUNTS[currentSurah]) { currentAyah = 1; currentSurah++; } }
         if (currentSurah > 114) { stopSelf(); return; }
-        prefs.edit().putInt("lastSurah", currentSurah).putInt("lastAyah", currentAyah).apply();
+        currentRetryLevel = 0;
+        saveLastRead();
         playCurrent();
     }
 
     private void playPrev() {
-        currentAyah--; if (currentAyah < 1) { 
-            currentSurah--; if (currentSurah < 1) currentSurah = 1; 
-            currentAyah = AYAH_COUNTS[currentSurah]; 
+        currentAyah--; 
+        if (currentAyah < 1) { 
+            currentSurah--; if (currentSurah < 1) { currentSurah = 1; currentAyah = 1; } 
+            else { currentAyah = AYAH_COUNTS[currentSurah]; }
         }
-        prefs.edit().putInt("lastSurah", currentSurah).putInt("lastAyah", currentAyah).apply();
+        currentRetryLevel = 0;
+        saveLastRead();
         playCurrent();
     }
 
-    private void pauseAudio() { if (mPlayer != null) { mPlayer.pause(); notifyUI("PAUSED"); showNotification(false); } }
-    
-    private void resumeAudio() { 
-        if (mPlayer != null) { 
-            mPlayer.start(); 
-            notifyUI("PLAYING"); 
-            showNotification(true); 
-            progressHandler.post(progressRunnable);
-        } else { playCurrent(); }
-    }
-    
-    private void releasePlayers() { 
-        if (mPlayer != null) { 
-            try { mPlayer.stop(); mPlayer.release(); } catch(Exception ignored) {} 
-            mPlayer = null; 
-        } 
-        progressHandler.removeCallbacks(progressRunnable); 
-    }
+    private void pauseAudio() { if (mPlayer != null && mPlayer.isPlaying()) { mPlayer.pause(); notifyUI("PAUSED"); showNotification(false); } }
+    private void resumeAudio() { if (mPlayer != null) { mPlayer.start(); notifyUI("PLAYING"); showNotification(true); progressHandler.post(progressRunnable); } else { playCurrent(); } }
+    private void releasePlayers() { if (mPlayer != null) { try { mPlayer.stop(); mPlayer.release(); } catch(Exception ignored) {} mPlayer = null; } progressHandler.removeCallbacks(progressRunnable); }
 
     private void notifyUI(String status) {
         Intent intent = new Intent(UI_UPDATE_BROADCAST);
@@ -253,16 +287,15 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
     }
 
     private void showNotification(boolean isPlaying) {
-        String surahName = "سورة " + currentSurah;
+        String surahName = (currentSurah >= 1 && currentSurah <= 114) ? SURAH_NAMES[currentSurah] : ("سورة " + currentSurah);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(surahName + " - آية " + currentAyah)
+            .setContentTitle("سورة " + surahName + " - آية " + currentAyah)
             .setContentText(currentReciterName)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setStyle(new MediaStyle())
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(isPlaying)
             .build();
-            
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         } else {
@@ -280,17 +313,7 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
         }
     }
 
-    @Override public void onAudioFocusChange(int f) {
-        if (f == AudioManager.AUDIOFOCUS_LOSS || f == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-            pauseAudio();
-        }
-    }
-    
+    @Override public void onAudioFocusChange(int f) { if (f == AudioManager.AUDIOFOCUS_LOSS || f == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) pauseAudio(); }
     @Nullable @Override public IBinder onBind(Intent intent) { return null; }
-    
-    @Override public void onDestroy() { 
-        releasePlayers(); 
-        if (wakeLock != null && wakeLock.isHeld()) wakeLock.release(); 
-        super.onDestroy(); 
-    }
+    @Override public void onDestroy() { releasePlayers(); if (wakeLock != null && wakeLock.isHeld()) wakeLock.release(); super.onDestroy(); }
 }
