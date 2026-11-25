@@ -1,7 +1,8 @@
 {
-    "id": "Mustafa_Al-Lahoni_64kbps",
+    "id": "Mustafa_al-Lahoni_64kbps",
     "name": "الشيخ مصطفى اللاهوني",
     "sub": "رواية حفص عن عاصم (آيات)",
     "type": "ayah",
-    "server": ""
+    "server": "",
+    "comment": "تعديل جراحي: توحيد المُعرف وتنظيف السيرفر ليعمل بنظام المحاولات الموحد"
 }

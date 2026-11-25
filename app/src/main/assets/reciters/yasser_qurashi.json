@@ -1,7 +1,8 @@
 {
-    "id": "Yasser_Ad-Dussary_64kbps",
+    "id": "Yasser_al-Qurashi_64kbps",
     "name": "الشيخ ياسر القرشي",
     "sub": "رواية حفص عن عاصم (آيات)",
     "type": "ayah",
-    "server": ""
+    "server": "",
+    "comment": "تعديل جراحي: تصحيح المُعرف وتنظيف السيرفر ليعمل بنظام المحاولات الموحد"
 }

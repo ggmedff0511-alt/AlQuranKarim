@@ -12,10 +12,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,16 +22,23 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * ميزة منفصلة: إدارة بيانات القرآن الكريم (تم التحديث لدعم التحميل والقراءة بدون نت)
  * وظيفتها: جلب الآيات من السيرفر أو الذاكرة المحلية وإدارة عملية التحميل.
+ * جراحة: تم استبدال HttpURLConnection بـ OkHttp لضمان استقرار التحميل وتجاوز مشاكل الاتصال والـ SSL.
  */
 public class QuranDataManager {
     private static final String TAG = "QuranDataManager";
     private final MainActivity activity;
     private final SharedPreferences prefs;
     private final ExecutorService executor;
+    private final OkHttpClient httpClient;
     private static final int[] AYAH_COUNTS = {0, 7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88, 75, 85, 54, 53, 89, 59, 37, 35, 38, 29, 18, 45, 60, 49, 62, 55, 78, 96, 29, 22, 24, 13, 14, 11, 11, 18, 12, 12, 30, 52, 52, 44, 28, 28, 20, 56, 40, 31, 50, 40, 46, 42, 29, 19, 36, 25, 22, 17, 19, 26, 30, 20, 15, 21, 11, 8, 8, 19, 5, 8, 8, 11, 11, 8, 3, 9, 5, 4, 7, 3, 6, 3, 5, 4, 5, 6};
     
     private final Map<String, String> reciterNamesCache = new HashMap<>();
@@ -41,6 +47,12 @@ public class QuranDataManager {
         this.activity = activity;
         this.prefs = prefs;
         this.executor = executor;
+        this.httpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .build();
         loadReciterNamesSync();
     }
 
@@ -83,19 +95,23 @@ public class QuranDataManager {
                     activity.runOnUiThread(() -> activity.runJS("if(window." + callback + ") " + callback + "('" + b64 + "')"));
                     return;
                 }
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-                StringBuilder response = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                    String line; while ((line = reader.readLine()) != null) response.append(line).append("\n");
+                
+                Request request = new Request.Builder()
+                        .url(urlStr)
+                        .header("User-Agent", "Mozilla/5.0")
+                        .header("Accept", "application/json")
+                        .build();
+
+                try (Response response = httpClient.newCall(request).execute()) {
+                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                    String result = response.body().string();
+                    if (surahId != -1) result = applyDataPatches(surahId, result);
+                    if (surahId != -1 && !result.isEmpty()) saveLocalText(surahId, result);
+                    final String b64 = Base64.encodeToString(result.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                    activity.runOnUiThread(() -> activity.runJS("if(window." + callback + ") " + callback + "('" + b64 + "')"));
                 }
-                String result = response.toString();
-                if (surahId != -1) result = applyDataPatches(surahId, result);
-                if (surahId != -1 && !result.isEmpty()) saveLocalText(surahId, result);
-                final String b64 = Base64.encodeToString(result.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
-                activity.runOnUiThread(() -> activity.runJS("if(window." + callback + ") " + callback + "('" + b64 + "')"));
             } catch (Exception e) {
+                Log.e(TAG, "FetchQuranData error", e);
                 activity.runOnUiThread(() -> activity.runJS("if(window." + callback + ") " + callback + "(null)"));
             }
         });
@@ -104,26 +120,23 @@ public class QuranDataManager {
     public void fetchTafsir(int surah, int ayah, String callback) {
         executor.execute(() -> {
             try {
-                // استخدام تفسير الميسر (معرف 16) كمثال افتراضي
                 String urlStr = String.format(Locale.US, "https://api.quran.com/api/v4/tafsirs/16/by_ayah/%d:%d", surah, ayah);
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-                
-                StringBuilder response = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) response.append(line);
+                Request request = new Request.Builder()
+                        .url(urlStr)
+                        .header("User-Agent", "Mozilla/5.0")
+                        .header("Accept", "application/json")
+                        .build();
+
+                try (Response response = httpClient.newCall(request).execute()) {
+                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                    JSONObject json = new JSONObject(response.body().string());
+                    String tafsirText = "";
+                    if (json.has("tafsir")) {
+                        tafsirText = json.getJSONObject("tafsir").getString("text");
+                    }
+                    final String b64 = Base64.encodeToString(tafsirText.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                    activity.runOnUiThread(() -> activity.runJS("if(window." + callback + ") " + callback + "('" + b64 + "')"));
                 }
-                
-                JSONObject json = new JSONObject(response.toString());
-                String tafsirText = "";
-                if (json.has("tafsir")) {
-                    tafsirText = json.getJSONObject("tafsir").getString("text");
-                }
-                
-                final String b64 = Base64.encodeToString(tafsirText.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
-                activity.runOnUiThread(() -> activity.runJS("if(window." + callback + ") " + callback + "('" + b64 + "')"));
             } catch (Exception e) {
                 Log.e(TAG, "FetchTafsir error", e);
                 activity.runOnUiThread(() -> activity.runJS("if(window." + callback + ") " + callback + "(null)"));
@@ -136,13 +149,17 @@ public class QuranDataManager {
             try {
                 // 1. تحميل النص
                 String urlText = "https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=" + surahId;
-                HttpURLConnection connText = (HttpURLConnection) new URL(urlText).openConnection();
-                connText.setRequestProperty("User-Agent", "Mozilla/5.0");
-                StringBuilder sb = new StringBuilder();
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(connText.getInputStream(), StandardCharsets.UTF_8))) {
-                    String l; while((l = r.readLine()) != null) sb.append(l);
+                Request requestText = new Request.Builder()
+                        .url(urlText)
+                        .header("User-Agent", "Mozilla/5.0")
+                        .header("Accept", "application/json")
+                        .build();
+
+                String content;
+                try (Response response = httpClient.newCall(requestText).execute()) {
+                    if (!response.isSuccessful()) throw new IOException("Text download failed: " + response);
+                    content = applyDataPatches(surahId, response.body().string());
                 }
-                String content = applyDataPatches(surahId, sb.toString());
                 saveLocalText(surahId, content);
 
                 // 2. تحميل الصوتيات
@@ -150,25 +167,31 @@ public class QuranDataManager {
                 String server = prefs.getString("reciter_server_" + reciterId, "");
                 
                 if ("surah".equals(type) && !server.isEmpty()) {
-                    String url = server.replace("https://", "http://");
+                    String url = server;
                     if (!url.endsWith("/")) url += "/";
                     String audioUrl = url + String.format(Locale.US, "%03d.mp3", surahId);
                     downloadFile(audioUrl, getAudioPath(reciterId, surahId, 1, true));
                 } else {
                     int count = AYAH_COUNTS[surahId];
                     for (int i = 1; i <= count; i++) {
-                        String audioUrl = String.format(Locale.US, "http://www.everyayah.com/data/%s/%03d%03d.mp3", reciterId, surahId, i);
+                        String audioUrl = String.format(Locale.US, "https://www.everyayah.com/data/%s/%03d%03d.mp3", reciterId, surahId, i);
                         try {
                             downloadFile(audioUrl, getAudioPath(reciterId, surahId, i, false));
-                        } catch (Exception e) { Log.e(TAG, "Ayah " + i + " skip", e); }
+                        } catch (Exception e) { 
+                            Log.e(TAG, "Ayah " + i + " skip, trying HTTP fallback", e);
+                            try {
+                                String fallbackUrl = audioUrl.replace("https://", "http://");
+                                downloadFile(fallbackUrl, getAudioPath(reciterId, surahId, i, false));
+                            } catch (Exception e2) { Log.e(TAG, "Ayah " + i + " total fail"); }
+                        }
                     }
                 }
 
                 // 3. تحديث الواجهة
                 updateUI();
-                activity.runOnUiThread(() -> activity.runJS("if(window.AndroidBridge) window.AndroidBridge.showToast('تم تحميل سورة بنجاح');"));
+                activity.runOnUiThread(() -> activity.runJS("if(window.AndroidBridge) window.AndroidBridge.showToast('تم تحميل السورة بنجاح');"));
             } catch (Exception e) { 
-                Log.e(TAG, "Download error", e);
+                Log.e(TAG, "Download error for surah " + surahId, e);
                 activity.runOnUiThread(() -> activity.runJS("if(window.AndroidBridge) window.AndroidBridge.showToast('فشل التحميل، تحقق من الاتصال');"));
             }
         });
@@ -225,21 +248,22 @@ public class QuranDataManager {
     }
 
     private void downloadFile(String urlStr, File target) throws Exception {
-        if (target.exists() && target.length() > 2000) return;
-        target.getParentFile().mkdirs();
-        HttpURLConnection conn = null;
-        try {
-            URL url = new URL(urlStr);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-            conn.setConnectTimeout(15000);
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) throw new Exception("HTTP " + conn.getResponseCode());
+        if (target == null) return;
+        if (target.exists() && target.length() > 5000) return; 
+        if (target.getParentFile() != null) target.getParentFile().mkdirs();
+        
+        Request request = new Request.Builder()
+                .url(urlStr)
+                .header("User-Agent", "Mozilla/5.0")
+                .build();
 
-            try (InputStream is = conn.getInputStream(); FileOutputStream fos = new FileOutputStream(target)) {
-                byte[] buffer = new byte[8192]; int read;
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) throw new IOException("Failed to download file: " + response);
+            try (InputStream is = response.body().byteStream(); FileOutputStream fos = new FileOutputStream(target)) {
+                byte[] buffer = new byte[16384]; int read;
                 while ((read = is.read(buffer)) != -1) fos.write(buffer, 0, read);
             }
-        } finally { if (conn != null) conn.disconnect(); }
+        }
     }
 
     private File getAudioPath(String reciter, int s, int a, boolean isFullSurah) {

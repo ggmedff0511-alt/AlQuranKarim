@@ -1,7 +1,8 @@
 {
-    "id": "Abdulmohsin_Al-Harthi_128kbps",
+    "id": "Abdulmohsin_Al-Harthi_64kbps",
     "name": "الشيخ عبدالمحسن الحارثي",
     "sub": "رواية حفص عن عاصم (آيات)",
     "type": "ayah",
-    "server": ""
+    "server": "",
+    "comment": "تعديل جراحي: توحيد المُعرف وتنظيف السيرفر ليعمل بنظام المحاولات الموحد"
 }

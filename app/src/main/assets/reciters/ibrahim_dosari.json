@@ -1,7 +1,8 @@
 {
-    "id": "Ibrahim_Al_Dossary_128kbps",
+    "id": "Ibrahim_al-Dossari_64kbps",
     "name": "الشيخ إبراهيم الدوسري",
     "sub": "رواية حفص عن عاصم (آيات)",
     "type": "ayah",
-    "server": ""
+    "server": "",
+    "comment": "تعديل جراحي: توحيد المُعرف وتنظيف السيرفر ليعمل بنظام المحاولات الموحد"
 }

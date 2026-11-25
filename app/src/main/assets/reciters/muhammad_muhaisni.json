@@ -1,7 +1,8 @@
 {
-    "id": "Muhammad_al-Muhaisny_128kbps",
+    "id": "Muhammad_al-Muhaisny_64kbps",
     "name": "الشيخ محمد المحيسني",
     "sub": "رواية حفص عن عاصم (آيات)",
     "type": "ayah",
-    "server": ""
+    "server": "",
+    "comment": "تعديل جراحي: توحيد المُعرف وتنظيف السيرفر ليعمل بنظام المحاولات الموحد"
 }

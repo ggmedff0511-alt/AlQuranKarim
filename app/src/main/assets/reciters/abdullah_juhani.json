@@ -1,7 +1,8 @@
 {
-    "id": "Abdullah_Al-Johany_99kbps",
+    "id": "Abdullah_al-Johany_64kbps",
     "name": "الشيخ عبدالله الجهني",
     "sub": "رواية حفص عن عاصم (آيات)",
     "type": "ayah",
-    "server": ""
+    "server": "",
+    "comment": "تعديل جراحي: توحيد المُعرف وتنظيف السيرفر ليعمل بنظام المحاولات الموحد"
 }
