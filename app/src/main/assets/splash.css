@@ -1,5 +1,5 @@
 /* splash.css - النسخة النهائية: عرض الآية كاملة مع الحفاظ على التنسيق المرفوع */
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;700&display=swap');
+/* تعديل جراحي: إزالة @import الخارجي لضمان عمل التطبيق بدون إنترنت - الاعتماد على التعريفات المحلية في common.css */
 
 #splash-screen {
     position: fixed;

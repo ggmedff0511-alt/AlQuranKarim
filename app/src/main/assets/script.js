@@ -81,10 +81,10 @@ function displayVerses(verses) {
     }
     container.innerHTML = html;
     // تظليل فوري عند التحميل
-    setTimeout(function() { window.highlightAyah(window.currentId + ":" + window.currentAyah); }, 100);
+    setTimeout(function() { window.highlightAyah(window.currentId + ":" + window.currentAyah, true); }, 100);
 }
 
-window.highlightAyah = function(key) {
+window.highlightAyah = function(key, forceScroll) {
     var el = document.getElementById('v-' + key);
     if(el) {
         // إزالة التظليل القديم بكفاءة
@@ -92,9 +92,13 @@ window.highlightAyah = function(key) {
         if (active) active.classList.remove('active');
 
         el.classList.add('active');
-        // تمرير ذكي وهادئ
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // تعديل جراحي: التأكد من تحريك الشاشة مع القارئ
+        if (window.followAudio || forceScroll) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return true;
     }
+    return false;
 };
 
 window.syncAyah = function(s, a) {
@@ -105,15 +109,22 @@ window.syncAyah = function(s, a) {
         window.renderSurahContents(sInt, false); return;
     }
     window.currentAyah = aInt;
-    window.highlightAyah(sInt + ":" + aInt);
+    window.highlightAyah(sInt + ":" + aInt, true);
 };
 
+/**
+ * تعليق جراحي: تحسين استقبال تحديثات الصوت في المحرك الأساسي
+ * لمنع مشكلة التوقف عند آيات البداية وضمان حركة الشاشة
+ */
 window.onAudioUpdate = function(status, surah, ayah, repeat, reciterName) {
-    // تحديث الواجهة بناءً على البث القادم من الخدمة
     var sInt = parseInt(surah); var aInt = parseInt(ayah);
     if (!isNaN(sInt) && sInt > 0 && !isNaN(aInt) && aInt > 0) {
-        if (!window.isFetching && window.followAudio) {
-            // تحديث التظليل فقط إذا تغيرت الآية أو فقد التظليل
+        if (!window.isFetching) {
+            // تفعيل المتابعة تلقائياً عند التشغيل لضمان حركة الشاشة مع صوت الشيخ
+            if (status && (status.includes('PLAYING') || status.includes('BUFFERING'))) {
+                window.followAudio = true;
+            }
+
             if (sInt !== window.currentId || aInt !== window.currentAyah || !document.querySelector('.verse-item.active')) {
                 window.syncAyah(sInt, aInt);
             }

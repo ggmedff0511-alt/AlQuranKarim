@@ -31,7 +31,8 @@ window.onload = function() {
 };
 
 /**
- * دالة استقبال تحديثات الصوت - تم تبسيطها لضمان عدم التجمد
+ * دالة استقبال تحديثات الصوت - تم تحسينها لضمان المتابعة الدقيقة وحل مشكلة التكرار
+ * التعديل الجراحي: إضافة تحديث أيقونة التكرار وحل مشكلة التوقف عند بداية السور (مثل الم)
  */
 window.onAudioUpdate = function(status, surah, ayah, repeat, reciterName, progress) {
     window.AudioStatus = status;
@@ -40,27 +41,47 @@ window.onAudioUpdate = function(status, surah, ayah, repeat, reciterName, progre
     var key = sInt + ":" + aInt;
 
     if (!isNaN(sInt) && sInt > 0 && !isNaN(aInt) && aInt > 0) {
-        if (window._lastProcessedKey !== key) {
-            // تفعيل المتابعة تلقائياً عند التشغيل
-            if (status === 'PLAYING' || status === 'BUFFERING') {
-                window.followAudio = true;
-            }
+        // تعليق جراحي: تحسين التحقق من حالة التشغيل ليشمل الحالات المتعددة (PLAYING, BUFFERING) لضمان تفعيل المتابعة
+        if (status && (status.toString().toUpperCase().includes('PLAYING') || status.toString().toUpperCase().includes('BUFFERING'))) {
+            window.followAudio = true;
+        }
 
-            if (sInt !== window.currentId) {
-                window.syncAyah(sInt, aInt);
-            } else {
-                window.currentAyah = aInt;
-                window.highlightAyah(key);
+        if (sInt !== window.currentId) {
+            // عند تغيير السورة، نصفر المفتاح لضمان إعادة التظليل بعد اكتمال التحميل
+            window._lastProcessedKey = null;
+            window.syncAyah(sInt, aInt);
+        } else {
+            window.currentAyah = aInt;
+            // التحقق مما إذا كانت الآية قد تغيرت أو إذا كان التظليل مفقوداً من الشاشة
+            if (window._lastProcessedKey !== key || !document.querySelector('.verse-item.active')) {
+                // محاولة التظليل، وإذا نجحت نحدث المفتاح الأخير
+                if (window.highlightAyah(key, true)) {
+                    window._lastProcessedKey = key;
+                }
             }
-            window._lastProcessedKey = key;
         }
     }
 
-    // تحديث أزرار الواجهة
+    // تحديث زر التشغيل
     var playBtn = document.getElementById('play-pause-btn');
     if (playBtn) {
         var icon = playBtn.querySelector('.material-symbols-rounded');
-        if (icon) icon.innerText = (status === 'PLAYING' || status === 'BUFFERING') ? 'pause' : 'play_arrow';
+        if (icon) icon.innerText = (status && (status.toString().toUpperCase().includes('PLAYING') || status.toString().toUpperCase().includes('BUFFERING'))) ? 'pause' : 'play_arrow';
+    }
+
+    // تحديث حالة زر التكرار لضمان وضوحها للمستخدم (حل مشكلة التكرار غير المقصود)
+    var repeatBtn = document.querySelector('button[onclick*="toggleRepeat"]');
+    if (repeatBtn) {
+        var rIcon = repeatBtn.querySelector('.material-symbols-rounded');
+        if (rIcon) {
+            if (repeat) {
+                rIcon.innerText = 'repeat_one';
+                rIcon.style.color = 'var(--gold-main)';
+            } else {
+                rIcon.innerText = 'repeat';
+                rIcon.style.color = '#FFFFFF';
+            }
+        }
     }
 
     var recNameEl = document.getElementById('mushaf-reciter-name');
@@ -71,25 +92,30 @@ window.onAudioUpdate = function(status, surah, ayah, repeat, reciterName, progre
 
 /**
  * تظليل الآية وتحريك الشاشة لمنتصفها تماماً
+ * تعديل جراحي: إضافة معامل forceScroll لضمان تحريك الشاشة مع صوت الشيخ باستمرار
  */
-window.highlightAyah = function(key) {
+window.highlightAyah = function(key, forceScroll) {
     var el = document.getElementById('v-' + key);
     if(el) {
-        // إزالة التظليل القديم
-        var actives = document.querySelectorAll('.verse-item.active');
-        for(var i=0; i<actives.length; i++) actives[i].classList.remove('active');
+        var isAlreadyActive = el.classList.contains('active');
 
-        // تفعيل التظليل الجديد
-        el.classList.add('active');
+        // إزالة التظليل القديم وتفعيل الجديد فقط إذا لزم الأمر
+        if (!isAlreadyActive) {
+            var actives = document.querySelectorAll('.verse-item.active');
+            for(var i=0; i<actives.length; i++) actives[i].classList.remove('active');
+            el.classList.add('active');
+        }
 
-        // تحريك الشاشة
-        if (window.followAudio) {
+        // تحريك الشاشة لمنتصف الآية إذا كانت المتابعة مفعلة
+        if (window.followAudio && (forceScroll || !isAlreadyActive)) {
             el.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
             });
         }
+        return true;
     }
+    return false;
 };
 
 window.syncAyah = function(s, a) {
@@ -114,7 +140,7 @@ window.handleVerseClick = function(key) {
         window.currentAyah = parseInt(parts[1]);
         window.callNative('playAyah', window.currentId, window.currentAyah);
         window.followAudio = true;
-        window.highlightAyah(key);
+        window.highlightAyah(key, true);
     }
 
     window._lastClickTime = now;

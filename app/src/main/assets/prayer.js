@@ -51,7 +51,10 @@ function createTicks() {
 window.onload = () => {
     createTicks();
     refreshData();
-    if (typeof callNative === 'function') callNative('startQiblaUpdate');
+    if (typeof callNative === 'function') {
+        callNative('startQiblaUpdate');
+        callNative('getHijriDate', 'onHijriDateReceived');
+    }
 };
 
 window.onbeforeunload = () => {
@@ -101,22 +104,36 @@ window.onHijriDateReceived = (date) => {
 
 /**
  * تحديث اتجاه القبلة بناءً على مستشعرات الموبايل
+ * azimuth: اتجاه الهاتف بالنسبة للشمال
+ * needleRotation: الزاوية التي يجب أن تتجه إليها الإبرة لتشير للكعبة
  */
-window.onQiblaUpdate = (deg) => {
+window.onQiblaUpdate = (azimuth, needleRotation) => {
     const needle = document.getElementById('main-needle-pointer');
+    const ticks = document.getElementById('ticks-container');
     const valEl = document.getElementById('qibla-val-text');
-    if(needle) {
-        needle.style.transform = `translateX(-50%) rotate(${deg}deg)`;
-        if (Math.abs(deg) <= 5 || Math.abs(deg) >= 355) {
+
+    if (ticks) {
+        // تدوير قرص البوصلة (التدريجات) عكس اتجاه الهاتف لتبدو ثابتة في مكانها
+        ticks.style.transform = `rotate(${-azimuth}deg)`;
+    }
+
+    if (needle) {
+        // تدوير الإبرة لتشير إلى القبلة حقيقياً
+        needle.style.transform = `translateX(-50%) rotate(${needleRotation}deg)`;
+
+        // ميزة اللون الأخضر عند المحاذاة الدقيقة
+        if (Math.abs(needleRotation) <= 3 || Math.abs(needleRotation) >= 357) {
             needle.classList.add('qibla-correct');
             if (valEl) valEl.style.color = "#00FF00";
-            if (typeof callNative === 'function') callNative('vibrate', 30);
         } else {
             needle.classList.remove('qibla-correct');
             if (valEl) valEl.style.color = "#E8C172";
         }
     }
-    if (valEl) valEl.innerText = Math.round(deg) + "°";
+
+    if (valEl) {
+        valEl.innerText = Math.round(needleRotation < 0 ? needleRotation + 360 : needleRotation) + "°";
+    }
 };
 
 let timerInterval;

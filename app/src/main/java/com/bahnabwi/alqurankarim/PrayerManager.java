@@ -24,9 +24,8 @@ public class PrayerManager {
                 if (adhanPlayer != null) {
                     adhanPlayer.release();
                 }
-                // Using a default adhan sound from raw resources
-                int resId = activity.getResources().getIdentifier("adhan_fajr", "raw", activity.getPackageName());
-                if (resId == 0) resId = activity.getResources().getIdentifier("adhan", "raw", activity.getPackageName());
+                // تعليق جراحي: استخدام اسم الملف الفعلي "azan" الموجود في مجلد raw لضمان انطلاق الصوت
+                int resId = activity.getResources().getIdentifier("azan", "raw", activity.getPackageName());
                 
                 if (resId != 0) {
                     adhanPlayer = MediaPlayer.create(activity, resId);

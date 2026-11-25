@@ -32,6 +32,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -48,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -206,6 +208,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         runOnUiThread(() -> { if(webView != null) webView.evaluateJavascript(js, null); });
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (requestCode == 100) {
+                updateLocation();
+            } else if (requestCode == 101) {
+                PrayerScheduler.scheduleNextPrayer(this);
+            }
+        }
+    }
+
     class WebBridge {
         @JavascriptInterface
         public void showToast(String msg) { 
@@ -262,6 +276,48 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     obj.put("city", prefs.getString("last_city_name", "القاهرة، مصر"));
                     runJS("if(window." + callback + ") " + callback + "('" + obj.toString() + "')");
                 } catch (Exception e) { Log.e("PrayerJS", "Error", e); }
+            });
+        }
+
+        @JavascriptInterface
+        public void getHijriDate(String callback) {
+            executorService.execute(() -> {
+                try {
+                    String hijriDate;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        // استخدام تقويم أم القرى الرسمي عبر ICU
+                        android.icu.util.Calendar hijri = android.icu.util.Calendar.getInstance(
+                                android.icu.util.ULocale.forLanguageTag("ar@calendar=islamic-umalqura"));
+                        hijriDate = String.format(new Locale("ar"), "%d %s %d هـ",
+                                hijri.get(android.icu.util.Calendar.DAY_OF_MONTH),
+                                getHijriMonthName(hijri.get(android.icu.util.Calendar.MONTH)),
+                                hijri.get(android.icu.util.Calendar.YEAR));
+                    } else {
+                        hijriDate = "يرجى تحديث النظام";
+                    }
+                    runJS(String.format("if(window.%s) %s('%s')", callback, callback, hijriDate));
+                } catch (Exception e) {
+                    Log.e("HijriJS", "Error", e);
+                    runJS(String.format("if(window.%s) %s('خطأ في التاريخ')", callback, callback));
+                }
+            });
+        }
+
+        private String getHijriMonthName(int month) {
+            String[] months = {"محرم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"};
+            return (month >= 0 && month < 12) ? months[month] : "";
+        }
+
+        @JavascriptInterface
+        public void playAzanSound() {
+            executorService.execute(() -> {
+                Intent serviceIntent = new Intent(MainActivity.this, AzanService.class);
+                serviceIntent.putExtra("prayerName", "تجربة الأذان");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    ContextCompat.startForegroundService(MainActivity.this, serviceIntent);
+                } else {
+                    startService(serviceIntent);
+                }
             });
         }
 
@@ -493,6 +549,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (key.equals("salat_nabi_notify")) {
                 if (value) SalatReminderReceiver.scheduleReminder(MainActivity.this, getSalatInterval());
                 else SalatReminderReceiver.cancelReminder(MainActivity.this);
+            } else if (key.equals("azan_notify")) {
+                if (value) PrayerScheduler.scheduleNextPrayer(MainActivity.this);
+                else PrayerScheduler.cancelAllAlarms(MainActivity.this);
             }
         }
 
@@ -514,6 +573,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sendIntent.putExtra(Intent.EXTRA_TEXT, text);
             sendIntent.setType("text/plain");
             startActivity(Intent.createChooser(sendIntent, null));
+        }
+
+        @JavascriptInterface
+        public void requestLocationUpdate() {
+            runOnUiThread(() -> updateLocation());
         }
     }
 

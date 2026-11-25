@@ -4,32 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ورد الصلاة على النبي - المصحف الكوني</title>
+    <!-- تعليق جراحي: استعادة روابط الخطوط والأيقونات الخارجية لضمان استقرار العرض -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="salat_nabi.css">
 </head>
 <body class="sn-body">
-    <!-- تعليق: شاشة ورد الصلاة على النبي ﷺ - تعتبر الأيقونة الثامنة والأساسية في الشاشة الرئيسية وتعمل بنظام SPA المتكامل لضمان سرعة الاستجابة -->
+    <!-- شاشة ورد الصلاة على النبي ﷺ -->
     <div class="sn-container">
-        <!-- الهيدر العلوي: تعليق: أزرار التنقل (إعدادات ورجوع) تعمل بالتوافق مع نظام التنقل الموحد لإيقاف الأصوات غير المرغوبة عند الانتقال -->
         <header class="sn-header">
-            <!-- أيقونة الإعدادات: ميزة تتيح الدخول السريع لضبط تفضيلات التطبيق والتنبيهات -->
             <button class="sn-icon-btn" onclick="window.parent.loadPage('settings')">
                 <span class="material-symbols-rounded">settings</span>
             </button>
             <div class="sn-header-center">
                 <span class="sn-header-subtitle">اللهم صل وسلم وبارك على نبينا محمد</span>
             </div>
-            <!-- أيقونة الرجوع: ميزة تتيح العودة الفورية للشاشة الرئيسية للتطبيق -->
             <button class="sn-icon-btn" onclick="window.parent.loadPage('home')">
                 <span class="material-symbols-rounded">arrow_back</span>
             </button>
         </header>
 
-        <!-- قسم الهوية: عرض بصري للمسجد النبوي والخط العربي الشريف لتعزيز الروحانية والجمالية -->
         <div class="sn-identity-row">
             <div class="sn-mosque-thumb">
-                <img src="snnng.jpg" onerror="this.src='https://img.freepik.com/free-photo/beautiful-mosque-view_23-2148812613.jpg'">
+                <img src="snnng.jpg" onerror="this.src='file:///android_res/drawable/logo'">
             </div>
             <div class="sn-calligraphy-box">
                 <div class="sn-calligraphy-text">محمد</div>
@@ -37,9 +34,7 @@
             </div>
         </div>
 
-        <!-- منطقة العداد المركزية: تعليق: ميزة العداد التفاعلي؛ الضغط على الدائرة يزيد الذكر، يحفظ التقدم، ويفعل الاهتزاز اللمسي عبر الجسر البرمجي -->
         <section class="sn-counter-section">
-            <!-- إحصائية المتتالية (يمين): تعليق: ميزة تحفيزية ذكية تعرض عدد الأيام المتواصلة التي التزم فيها المستخدم بالورد اليومي -->
             <div class="sn-side-stat">
                 <span class="sn-stat-label">المتتالية</span>
                 <span class="material-symbols-rounded sn-stat-icon" style="color:#ff9800;">local_fire_department</span>
@@ -47,7 +42,6 @@
                 <span class="sn-stat-sub">أيام</span>
             </div>
 
-            <!-- الدائرة والعداد: تعليق: الجزء التفاعلي الرئيسي الذي يتجاوب مع لمسات المستخدم بصرياً وحسياً لتعزيز تجربة الذكر -->
             <div class="sn-circle-outer" onclick="incrementSalatNabi()">
                 <svg class="sn-ring-svg" width="220" height="220" viewBox="0 0 220 220">
                     <defs>
@@ -61,7 +55,6 @@
                 </svg>
                 <div class="sn-counter-content">
                     <span class="sn-count-label">عدد اليوم</span>
-                    <!-- ميزة الألماس التفاعلية: تضيء تدريجياً عند الوصول لمنتصف الهدف (50%) وعند اكتماله (100%) -->
                     <div class="sn-diamonds">
                         <div class="sn-diamond dim"></div>
                         <div class="sn-diamond dim"></div>
@@ -72,7 +65,6 @@
                 </div>
             </div>
 
-            <!-- إحصائية الهدف (يسار): تعليق: ميزة تحديد الأهداف الشخصية التي تساعد المستخدم على التدرج في زيادة الورد اليومي -->
             <div class="sn-side-stat">
                 <span class="sn-stat-label">الهدف</span>
                 <span class="material-symbols-rounded sn-stat-icon" style="color:var(--gold);">track_changes</span>
@@ -81,17 +73,12 @@
             </div>
         </section>
 
-        <!-- أزرار التحكم الرئيسية: تعليق: أزرار تفاعلية لإدارة العداد ومشاركة الإحصائيات، مصممة لتعزيز تجربة المستخدم وارتباطه بالتطبيق -->
         <div class="sn-action-bar">
-            <!-- تعليق: ميزة إعادة التصفير - تسمح ببدء ورد جديد لليوم الحالي فقط بعد تأكيد رغبة المستخدم -->
             <button class="sn-btn-circle" onclick="resetCounter()"><span class="material-symbols-rounded">refresh</span></button>
-            <!-- تعليق: زر الصلاة الفوري - يسهل عملية زيادة العداد بلمسة واحدة كبيرة ومريحة في منتصف الشاشة -->
             <button class="sn-btn-pray" onclick="incrementSalatNabi()">صلِّ الآن</button>
-            <!-- تعليق: ميزة المشاركة - تسمح بنشر إنجاز الذكر اليومي لتشجيع الأهل والأصدقاء عبر تطبيقات التواصل -->
             <button class="sn-btn-circle" onclick="shareStats()"><span class="material-symbols-rounded">share</span></button>
         </div>
 
-        <!-- بطاقة التذكير الصوتي: تعليق: ميزة التنبيه الدوري التلقائي المبرمج بنظام أندرويد ليعمل بدقة حتى عند إغلاق الشاشة -->
         <div class="sn-reminder-card">
             <div class="sn-rem-header">
                 <div class="sn-rem-title-row">
@@ -102,47 +89,41 @@
                         <div class="sn-rem-seal">ﷺ</div>
                     </div>
                 </div>
-                <!-- تعليق: مفتاح التحكم السريع في تفعيل الخدمة أو تعطيلها في النظام بنقرة واحدة -->
                 <label class="switch">
                     <input type="checkbox" id="sn-rem-toggle" onchange="toggleReminder(this.checked)">
                     <span class="slider"></span>
                 </label>
             </div>
 
-            <!-- خيارات التذكير السريع: تعليق: تتيح تخصيصاً كاملاً لصوت وزمن التكرار بما يناسب راحة وخشوع المستخدم -->
             <div class="sn-rem-grid">
-                <!-- تعليق: ميزة اختيار التكرار الزمني (من ٥ دقائق إلى ٣ ساعات) وإعادة جدولة التنبيه فوراً -->
                 <div class="sn-rem-item" onclick="openIntervalPicker()">
                     <span class="sn-rem-item-label">تكرار التذكير</span>
                     <span class="sn-rem-item-val" id="sn-interval-text">كل ١٥ دقيقة</span>
                 </div>
-                <!-- تعليق: ميزة اختيار الصوت من بين قائمة تضم أصوات عذبة لكبار المشايخ (المعيقلي، الدوسري، وغيرهم) -->
                 <div class="sn-rem-item" onclick="openSoundPicker()">
                     <span class="sn-rem-item-label">صوت التذكير</span>
-                    <span class="sn-rem-item-val" id="current-sound-name">صل على محمد <span class="material-symbols-rounded" style="font-size:16px !important; margin-right:4px;">equalizer</span></span>
+                    <span class="sn-rem-item-val" id="current-sound-name">صل على محمد</span>
                 </div>
-                <!-- تعليق: عرض حالة الخدمة؛ الضغط هنا يغير حالة التذكير فوراً لسهولة التحكم -->
                 <div class="sn-rem-item" onclick="toggleReminder(!document.getElementById('sn-rem-toggle').checked)">
                     <span class="sn-rem-item-label">الحالة</span>
                     <span class="sn-rem-item-val status-active" id="sn-status-text">مفعل</span>
                 </div>
             </div>
 
-            <!-- شريط المعاينة: تعليق: ميزة استماع فورية للصوت المختار للتأكد من جودته وملاءمته قبل الاعتماد النهائي كمنبه رسمي -->
             <div class="sn-audio-footer">
                 <button class="sn-play-action" onclick="playSample()">
                     <span class="material-symbols-rounded">play_arrow</span>
                 </button>
                 <div class="sn-audio-info">
                     <div class="sn-audio-title">استمع للتذكير المختار</div>
-                    <div class="sn-audio-sub" id="footer-sound-name">صل على محمد - الصلاة على النبي</div>
+                    <div class="sn-audio-sub" id="footer-sound-name">صل على محمد</div>
                 </div>
                 <span class="material-symbols-rounded sn-bell-icon">notifications</span>
             </div>
         </div>
     </div>
 
-    <!-- نوافذ الخيارات المنبثقة لاختيار الصوت والتكرار -->
+    <!-- نوافذ الخيارات المنبثقة -->
     <div id="sound-picker-modal" class="sn-modal">
         <div class="sn-modal-content">
             <div class="sn-modal-header">

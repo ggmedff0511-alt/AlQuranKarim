@@ -82,13 +82,21 @@ window.onload = function() {
     window.loadPage(urlParams.get('page') || 'home');
 };
 
+/**
+ * تعليق جراحي: تحسين دالة إرسال الأوامر للإطارات الفرعية لتكون أكثر قوة وتتحمل تأخير التحميل
+ */
 function dispatchToFrame(fn) {
     var frame = document.getElementById('page-loader-frame');
     if (frame && frame.contentWindow) {
-        if (typeof frame.contentWindow[fn] === 'function') {
-            var args = Array.prototype.slice.call(arguments, 1);
-            frame.contentWindow[fn].apply(frame.contentWindow, args);
-        }
+        var args = Array.prototype.slice.call(arguments, 1);
+        var tryDispatch = function(count) {
+            if (typeof frame.contentWindow[fn] === 'function') {
+                frame.contentWindow[fn].apply(frame.contentWindow, args);
+            } else if (count < 5) { // محاولة 5 مرات كحد أقصى (حوالي 1.5 ثانية)
+                setTimeout(function() { tryDispatch(count + 1); }, 300);
+            }
+        };
+        tryDispatch(0);
     }
 }
 
@@ -99,7 +107,16 @@ window.onAudioUpdate = function(status, surah, ayah, repeat, reciterName, progre
 window.onQuranDataReceived = function(d) { dispatchToFrame('onQuranDataReceived', d); };
 window.onTafsirReceived = function(d) { dispatchToFrame('onTafsirReceived', d); };
 window.syncAyah = function(s, a) { dispatchToFrame('syncAyah', s, a); };
-window.onQiblaUpdate = function(deg) { dispatchToFrame('onQiblaUpdate', deg); };
+
+/**
+ * تعليق جراحي: تحديث استقبال بيانات القبلة لدعم تمرير كافة المتغيرات (azimuth, needleRotation)
+ */
+window.onQiblaUpdate = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift('onQiblaUpdate');
+    dispatchToFrame.apply(null, args);
+};
+
 window.onPrayerTimesLoaded = function(d) { dispatchToFrame('onPrayerTimesLoaded', d); };
 window.onDailyAyah = function(d) { dispatchToFrame('onDailyAyah', d); };
 window.onHijriDateReceived = function(d) { dispatchToFrame('onHijriDateReceived', d); };

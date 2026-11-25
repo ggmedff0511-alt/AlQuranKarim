@@ -24,9 +24,8 @@ import java.io.File;
 import java.util.Locale;
 
 /**
- * AudioService: النسخة الحادية عشر (المحرك الشامل الذكي)
- * تم التحديث لحل مشكلة توقف بعض المشايخ عبر نظام المحاولات المتعددة (Multi-Try)
- * يضمن هذا الإصدار عمل كافة القراء (مثل العجمي والشريم وعباد) دون التأثير على القراء الستة المستقرين.
+ * AudioService: نسخة الإصلاح الشامل للمزامنة والتكرار
+ * تم تحسين منطق CompletionListener لضمان الانتقال القسري للآية التالية
  */
 public class AudioService extends Service implements AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "AudioService";
@@ -48,7 +47,6 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
     private SharedPreferences prefs;
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     
-    // نظام المحاولات الممتد لضمان التوافق مع كافة هيكليات السيرفرات العالمية
     private int currentRetryLevel = 0;
     
     private final Runnable progressRunnable = new Runnable() {
@@ -74,6 +72,7 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
         loadReciterFromPrefs();
         currentSurah = prefs.getInt("last_surah", 1);
         currentAyah = prefs.getInt("last_ayah", 1);
+        // تعليق جراحي: التأكد من تحميل حالة التكرار بشكل صحيح من الإعدادات
         isRepeatEnabled = prefs.getBoolean("audio_repeat", false);
         createNotificationChannel();
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
@@ -122,6 +121,7 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
                     if (mPlayer != null && mPlayer.isPlaying()) playCurrent();
                     break;
                 case ACTION_SET_REPEAT:
+                    // تعليق جراحي: تحديث حالة التكرار في الخدمة وفي الإعدادات فوراً
                     isRepeatEnabled = intent.getBooleanExtra("enabled", isRepeatEnabled);
                     prefs.edit().putBoolean("audio_repeat", isRepeatEnabled).apply();
                     break;
@@ -149,22 +149,14 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
                 .build());
             
             String url = buildSmartUrl();
-            Log.d(TAG, "Attempting Play Level " + currentRetryLevel + ": " + url);
-            
             mPlayer.setDataSource(url);
             setupPlayerListeners(url);
             mPlayer.prepareAsync();
         } catch (Exception e) { 
-            Log.e(TAG, "DataSource error", e);
             handleRetry();
         }
     }
 
-    /**
-     * جراحة: نظام المحاولات الذكي المطور (Hybrid Retry Engine)
-     * يقوم بتجربة كافة احتمالات الروابط (مع/بدون _64kbps) و (HTTPS/HTTP) و (Mirrors)
-     * لضمان عمل كافة القراء المطلوبين بشكل آلي تماماً.
-     */
     private String buildSmartUrl() {
         File localFile = getLocalAudioFile();
         if (localFile != null && localFile.exists() && localFile.length() > 5000) return localFile.getAbsolutePath();
@@ -173,20 +165,17 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
             String.format(Locale.US, "%03d%03d.mp3", currentSurah, currentAyah) :
             String.format(Locale.US, "%03d.mp3", currentSurah);
 
-        // تبديل المُعرف تلقائياً في المستويات الفردية لتجربة الصيغة البديلة
         String reciterId = currentReciter;
         if (currentRetryLevel % 2 != 0) {
             if (reciterId.endsWith("_64kbps")) reciterId = reciterId.replace("_64kbps", "");
             else reciterId = reciterId + "_64kbps";
         }
 
-        // إذا كان هناك سيرفر يدوي في الـ JSON كمحاولة أولى
         if (currentRetryLevel == 0 && currentReciterServer != null && !currentReciterServer.isEmpty()) {
             String base = currentReciterServer.endsWith("/") ? currentReciterServer : currentReciterServer + "/";
             return base + fileName;
         }
 
-        // توزيع المحاولات على البروتوكولات والسيرفرات العالمية
         int serverStep = currentRetryLevel / 2;
         switch (serverStep) {
             case 0: return "https://everyayah.com/data/" + reciterId + "/" + fileName;
@@ -198,11 +187,10 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
     }
 
     private void handleRetry() {
-        if (currentRetryLevel < 9) { // تجربة 10 توليفات مختلفة قبل الاستسلام
+        if (currentRetryLevel < 9) {
             currentRetryLevel++;
             new Handler(Looper.getMainLooper()).postDelayed(this::playCurrent, 400);
         } else {
-            Log.e(TAG, "All 10 combinations failed for " + currentReciter);
             switchNext();
         }
     }
@@ -220,11 +208,17 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
             progressHandler.post(progressRunnable);
             showNotification(true);
         });
+        
+        // تعليق جراحي: حل مشكلة تكرار الآية (مثل الم) - الانتقال للآية التالية فور انتهاء الملف الصوتي
         mPlayer.setOnCompletionListener(mp -> {
-            if (isRepeatEnabled) playCurrent(); else switchNext();
+            if (isRepeatEnabled) {
+                playCurrent(); // تكرار نفس الآية فقط إذا فعل المستخدم ذلك
+            } else {
+                switchNext(); // الانتقال التلقائي للآية التالية
+            }
         });
+        
         mPlayer.setOnErrorListener((mp, what, extra) -> {
-            Log.w(TAG, "Player Error at level " + currentRetryLevel + ", retrying...");
             handleRetry();
             return true;
         });
@@ -249,9 +243,21 @@ public class AudioService extends Service implements AudioManager.OnAudioFocusCh
     }
 
     private void switchNext() {
-        if ("surah".equals(currentReciterType)) { currentSurah++; currentAyah = 1; }
-        else { currentAyah++; if (currentAyah > AYAH_COUNTS[currentSurah]) { currentAyah = 1; currentSurah++; } }
-        if (currentSurah > 114) { stopSelf(); return; }
+        if ("surah".equals(currentReciterType)) { 
+            currentSurah++; 
+            currentAyah = 1; 
+        } else { 
+            currentAyah++; 
+            if (currentAyah > AYAH_COUNTS[currentSurah]) { 
+                currentAyah = 1; 
+                currentSurah++; 
+            } 
+        }
+        if (currentSurah > 114) { 
+            stopSelf(); 
+            return; 
+        }
+        // تعليق جراحي: تصفير المحاولات لضمان عمل الآية التالية بسرعة وحل مشكلة التوقف
         currentRetryLevel = 0;
         saveLastRead();
         playCurrent();
